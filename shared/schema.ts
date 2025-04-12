@@ -1,30 +1,22 @@
-import { pgTable, text, serial, integer, boolean, doublePrecision, timestamp } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// Products table
-export const products = pgTable("products", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull(),
-  unitPrice: doublePrecision("unit_price").notNull(),
-  currentStock: integer("current_stock").notNull().default(0),
+// Product schemas
+export const insertProductSchema = z.object({
+  name: z.string().min(1),
+  unitPrice: z.number().min(0),
+  currentStock: z.number().int().default(0),
 });
 
-export const insertProductSchema = createInsertSchema(products).omit({
-  id: true,
-});
+export type Product = {
+  id: number;
+  name: string;
+  unitPrice: number;
+  currentStock: number;
+};
 
-// Purchases table
-export const purchases = pgTable("purchases", {
-  id: serial("id").primaryKey(),
-  invoiceNumber: text("invoice_number").notNull(),
-  orderDate: timestamp("order_date").notNull(),
-  supplier: text("supplier").notNull(),
-  deliveryCost: doublePrecision("delivery_cost").notNull(),
-  totalAmount: doublePrecision("total_amount").notNull(),
-});
+export type InsertProduct = z.infer<typeof insertProductSchema>;
 
-// Create custom insert schema with string date handling
+// Purchase schemas
 export const insertPurchaseSchema = z.object({
   invoiceNumber: z.string().min(1),
   orderDate: z.string().min(1), // Accept string dates
@@ -33,30 +25,38 @@ export const insertPurchaseSchema = z.object({
   totalAmount: z.number().min(0),
 });
 
-// Purchase items table
-export const purchaseItems = pgTable("purchase_items", {
-  id: serial("id").primaryKey(),
-  purchaseId: integer("purchase_id").notNull(),
-  productId: integer("product_id").notNull(),
-  quantity: integer("quantity").notNull(),
-  unitPrice: doublePrecision("unit_price").notNull(),
-  finalValue: doublePrecision("final_value").notNull(),
+export type Purchase = {
+  id: number;
+  invoiceNumber: string;
+  orderDate: string;
+  supplier: string;
+  deliveryCost: number;
+  totalAmount: number;
+};
+
+export type InsertPurchase = z.infer<typeof insertPurchaseSchema>;
+
+// Purchase items schemas
+export const insertPurchaseItemSchema = z.object({
+  purchaseId: z.number().int().positive(),
+  productId: z.number().int().positive(),
+  quantity: z.number().int().positive(),
+  unitPrice: z.number().min(0),
+  finalValue: z.number().min(0),
 });
 
-export const insertPurchaseItemSchema = createInsertSchema(purchaseItems).omit({
-  id: true,
-});
+export type PurchaseItem = {
+  id: number;
+  purchaseId: number;
+  productId: number;
+  quantity: number;
+  unitPrice: number;
+  finalValue: number;
+};
 
-// Sales table
-export const sales = pgTable("sales", {
-  id: serial("id").primaryKey(),
-  customerName: text("customer_name").notNull(),
-  customerContact: text("customer_contact").notNull(),
-  saleDate: timestamp("sale_date").notNull(),
-  saleAmount: doublePrecision("sale_amount").notNull(),
-});
+export type InsertPurchaseItem = z.infer<typeof insertPurchaseItemSchema>;
 
-// Create custom insert schema with string date handling
+// Sales schemas
 export const insertSaleSchema = z.object({
   customerName: z.string().min(1),
   customerContact: z.string().min(1),
@@ -64,30 +64,33 @@ export const insertSaleSchema = z.object({
   saleAmount: z.number().min(0),
 });
 
-// Sale items table
-export const saleItems = pgTable("sale_items", {
-  id: serial("id").primaryKey(),
-  saleId: integer("sale_id").notNull(),
-  productId: integer("product_id").notNull(),
-  quantity: integer("quantity").notNull(),
+export type Sale = {
+  id: number;
+  customerName: string;
+  customerContact: string;
+  saleDate: string;
+  saleAmount: number;
+};
+
+export type InsertSale = z.infer<typeof insertSaleSchema>;
+
+// Sale items schemas
+export const insertSaleItemSchema = z.object({
+  saleId: z.number().int().positive(),
+  productId: z.number().int().positive(),
+  quantity: z.number().int().positive(),
 });
 
-export const insertSaleItemSchema = createInsertSchema(saleItems).omit({
-  id: true,
-});
+export type SaleItem = {
+  id: number;
+  saleId: number;
+  productId: number;
+  quantity: number;
+};
 
-// Inventory adjustments table
-export const inventoryAdjustments = pgTable("inventory_adjustments", {
-  id: serial("id").primaryKey(),
-  productId: integer("product_id").notNull(),
-  adjustmentDate: timestamp("adjustment_date").notNull(),
-  adjustmentType: text("adjustment_type").notNull(), // Incoming, Outgoing
-  quantity: integer("quantity").notNull(),
-  reason: text("reason").notNull(),
-  notes: text("notes"),
-});
+export type InsertSaleItem = z.infer<typeof insertSaleItemSchema>;
 
-// Create custom insert schema with string date handling
+// Inventory adjustments schemas
 export const insertInventoryAdjustmentSchema = z.object({
   productId: z.number().int().positive(),
   adjustmentDate: z.string().min(1), // Accept string dates
@@ -97,21 +100,14 @@ export const insertInventoryAdjustmentSchema = z.object({
   notes: z.string().optional(),
 });
 
-// Types
-export type Product = typeof products.$inferSelect;
-export type InsertProduct = z.infer<typeof insertProductSchema>;
+export type InventoryAdjustment = {
+  id: number;
+  productId: number;
+  adjustmentDate: string;
+  adjustmentType: string;
+  quantity: number;
+  reason: string;
+  notes: string | null;
+};
 
-export type Purchase = typeof purchases.$inferSelect;
-export type InsertPurchase = z.infer<typeof insertPurchaseSchema>;
-
-export type PurchaseItem = typeof purchaseItems.$inferSelect;
-export type InsertPurchaseItem = z.infer<typeof insertPurchaseItemSchema>;
-
-export type Sale = typeof sales.$inferSelect;
-export type InsertSale = z.infer<typeof insertSaleSchema>;
-
-export type SaleItem = typeof saleItems.$inferSelect;
-export type InsertSaleItem = z.infer<typeof insertSaleItemSchema>;
-
-export type InventoryAdjustment = typeof inventoryAdjustments.$inferSelect;
 export type InsertInventoryAdjustment = z.infer<typeof insertInventoryAdjustmentSchema>;

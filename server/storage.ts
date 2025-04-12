@@ -5,19 +5,33 @@ import {
   sales, 
   saleItems, 
   inventoryAdjustments,
-  type Product,
-  type InsertProduct,
-  type Purchase,
-  type InsertPurchase,
-  type PurchaseItem,
-  type InsertPurchaseItem,
-  type Sale,
-  type InsertSale,
-  type SaleItem,
-  type InsertSaleItem,
-  type InventoryAdjustment,
-  type InsertInventoryAdjustment
+  type Product as ProductType,
+  type InsertProduct as InsertProductType,
+  type Purchase as PurchaseType,
+  type InsertPurchase as InsertPurchaseType,
+  type PurchaseItem as PurchaseItemType,
+  type InsertPurchaseItem as InsertPurchaseItemType,
+  type Sale as SaleType,
+  type InsertSale as InsertSaleType,
+  type SaleItem as SaleItemType,
+  type InsertSaleItem as InsertSaleItemType,
+  type InventoryAdjustment as InventoryAdjustmentType,
+  type InsertInventoryAdjustment as InsertInventoryAdjustmentType
 } from "@shared/schema";
+
+// Export types for use in firebaseStorage
+export type Product = ProductType;
+export type InsertProduct = InsertProductType;
+export type Purchase = PurchaseType;
+export type InsertPurchase = InsertPurchaseType;
+export type PurchaseItem = PurchaseItemType;
+export type InsertPurchaseItem = InsertPurchaseItemType;
+export type Sale = SaleType;
+export type InsertSale = InsertSaleType;
+export type SaleItem = SaleItemType;
+export type InsertSaleItem = InsertSaleItemType;
+export type InventoryAdjustment = InventoryAdjustmentType;
+export type InsertInventoryAdjustment = InsertInventoryAdjustmentType;
 
 // modify the interface with any CRUD methods
 // you might need
