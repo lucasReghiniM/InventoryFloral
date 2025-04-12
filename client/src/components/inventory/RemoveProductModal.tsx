@@ -153,12 +153,12 @@ const RemoveProductModal: React.FC<RemoveProductModalProps> = ({
           
           <div>
             <Label htmlFor="reason">Reason</Label>
-            <Select value={reason} onValueChange={setReason}>
+            <Select value={reason || "default"} onValueChange={setReason}>
               <SelectTrigger>
                 <SelectValue placeholder="Select reason" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Select reason</SelectItem>
+                <SelectItem value="default">Select reason</SelectItem>
                 <SelectItem value="damaged">Damaged</SelectItem>
                 <SelectItem value="expired">Expired</SelectItem>
                 <SelectItem value="lost">Lost</SelectItem>
