@@ -125,7 +125,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           adjustmentDate: purchaseData.orderDate,
           adjustmentType: "Incoming",
           quantity: item.quantity,
-          reason: `Purchase: ${purchaseData.invoiceNumber}`
+          reason: `Purchase: ${purchaseData.invoiceNumber}`,
+          notes: ""
         });
       }
       
@@ -207,7 +208,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           adjustmentDate: saleData.saleDate,
           adjustmentType: "Outgoing",
           quantity: item.quantity,
-          reason: `Sale: ${saleData.customerName}`
+          reason: `Sale: ${saleData.customerName}`,
+          notes: ""
         });
       }
       

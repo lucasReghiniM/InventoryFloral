@@ -24,8 +24,13 @@ export const purchases = pgTable("purchases", {
   totalAmount: doublePrecision("total_amount").notNull(),
 });
 
-export const insertPurchaseSchema = createInsertSchema(purchases).omit({
-  id: true,
+// Create custom insert schema with string date handling
+export const insertPurchaseSchema = z.object({
+  invoiceNumber: z.string().min(1),
+  orderDate: z.string().min(1), // Accept string dates
+  supplier: z.string().min(1),
+  deliveryCost: z.number().min(0),
+  totalAmount: z.number().min(0),
 });
 
 // Purchase items table
@@ -51,8 +56,12 @@ export const sales = pgTable("sales", {
   saleAmount: doublePrecision("sale_amount").notNull(),
 });
 
-export const insertSaleSchema = createInsertSchema(sales).omit({
-  id: true,
+// Create custom insert schema with string date handling
+export const insertSaleSchema = z.object({
+  customerName: z.string().min(1),
+  customerContact: z.string().min(1),
+  saleDate: z.string().min(1), // Accept string dates
+  saleAmount: z.number().min(0),
 });
 
 // Sale items table
@@ -78,8 +87,14 @@ export const inventoryAdjustments = pgTable("inventory_adjustments", {
   notes: text("notes"),
 });
 
-export const insertInventoryAdjustmentSchema = createInsertSchema(inventoryAdjustments).omit({
-  id: true,
+// Create custom insert schema with string date handling
+export const insertInventoryAdjustmentSchema = z.object({
+  productId: z.number().int().positive(),
+  adjustmentDate: z.string().min(1), // Accept string dates
+  adjustmentType: z.string().min(1),
+  quantity: z.number().int().positive(),
+  reason: z.string().min(1),
+  notes: z.string().optional(),
 });
 
 // Types

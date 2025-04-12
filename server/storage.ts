@@ -68,6 +68,8 @@ export class MemStorage implements IStorage {
   private currentSaleId: number;
   private currentSaleItemId: number;
   private currentInventoryAdjustmentId: number;
+  
+  // Firebase integration could be added here in the future
 
   constructor() {
     this.productsMap = new Map();
