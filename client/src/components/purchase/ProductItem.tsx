@@ -1,0 +1,139 @@
+import React, { useEffect } from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Trash } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+interface Product {
+  id: number;
+  name: string;
+  unitPrice: number;
+}
+
+interface ProductItemData {
+  id: string;
+  productId: number;
+  name: string;
+  unitPrice: number;
+  quantity: number;
+  finalValue: number;
+}
+
+interface ProductItemProps {
+  product: ProductItemData;
+  products: Product[];
+  onRemove: () => void;
+  onChange: (data: Partial<ProductItemData>) => void;
+}
+
+const ProductItem: React.FC<ProductItemProps> = ({ product, products, onRemove, onChange }) => {
+  useEffect(() => {
+    // Calculate final value whenever unit price or quantity changes
+    const finalValue = product.unitPrice * product.quantity;
+    if (finalValue !== product.finalValue) {
+      onChange({ finalValue });
+    }
+  }, [product.unitPrice, product.quantity]);
+
+  const handleExistingProductSelect = (productId: string) => {
+    const selectedProduct = products.find(p => p.id === parseInt(productId));
+    if (selectedProduct) {
+      onChange({
+        productId: selectedProduct.id,
+        name: selectedProduct.name,
+        unitPrice: selectedProduct.unitPrice
+      });
+    }
+  };
+
+  return (
+    <div className="bg-neutral-100 p-4 rounded-md">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+          <Label className="mb-1">Product Name</Label>
+          {products.length > 0 ? (
+            <Select
+              value={product.productId.toString()}
+              onValueChange={handleExistingProductSelect}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select product" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0">Select product</SelectItem>
+                {products.map((p) => (
+                  <SelectItem key={p.id} value={p.id.toString()}>
+                    {p.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <Input
+              value={product.name}
+              onChange={(e) => onChange({ name: e.target.value })}
+              placeholder="Product name"
+            />
+          )}
+        </div>
+        
+        <div>
+          <Label className="mb-1">Unit Price</Label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <span className="text-neutral-800 sm:text-sm">$</span>
+            </div>
+            <Input
+              type="number"
+              step="0.01"
+              min="0"
+              className="pl-7"
+              placeholder="0.00"
+              value={product.unitPrice}
+              onChange={(e) => onChange({ unitPrice: parseFloat(e.target.value) || 0 })}
+            />
+          </div>
+        </div>
+        
+        <div>
+          <Label className="mb-1">Quantity</Label>
+          <Input
+            type="number"
+            min="0"
+            placeholder="0"
+            value={product.quantity}
+            onChange={(e) => onChange({ quantity: parseInt(e.target.value) || 0 })}
+          />
+        </div>
+        
+        <div>
+          <Label className="mb-1">Final Value</Label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <span className="text-neutral-800 sm:text-sm">$</span>
+            </div>
+            <Input
+              type="text"
+              className="pl-7 bg-neutral-100"
+              placeholder="0.00"
+              value={product.finalValue.toFixed(2)}
+              readOnly
+            />
+          </div>
+        </div>
+      </div>
+      <Button
+        type="button"
+        variant="ghost"
+        onClick={onRemove}
+        className="mt-2 text-red-500 hover:text-red-700 hover:bg-red-100 p-0 h-8"
+      >
+        <Trash className="h-4 w-4 mr-1" />
+        <span className="text-sm">Remove</span>
+      </Button>
+    </div>
+  );
+};
+
+export default ProductItem;
