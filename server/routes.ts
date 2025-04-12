@@ -117,6 +117,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Process purchase items
       const createdItems = [];
       for (const item of items) {
+        // Make sure productId is valid
+        if (!item.productId || item.productId <= 0) {
+          return res.status(400).json({ 
+            message: "Invalid product selection", 
+            error: "Please select a valid product for all items" 
+          });
+        }
+        
         const itemData = insertPurchaseItemSchema.parse({
           ...item,
           purchaseId: createdPurchase.id
@@ -135,7 +143,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           adjustmentType: "Incoming",
           quantity: item.quantity,
           reason: `Purchase: ${purchaseData.invoiceNumber}`,
-          notes: ""
+          notes: null
         });
       }
       
@@ -209,6 +217,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Process sale items
       const createdItems = [];
       for (const item of items) {
+        // Make sure productId is valid
+        if (!item.productId || item.productId <= 0) {
+          return res.status(400).json({ 
+            message: "Invalid product selection", 
+            error: "Please select a valid product for all items" 
+          });
+        }
+        
         const itemData = insertSaleItemSchema.parse({
           ...item,
           saleId: createdSale.id
@@ -227,7 +243,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           adjustmentType: "Outgoing",
           quantity: item.quantity,
           reason: `Sale: ${saleData.customerName}`,
-          notes: ""
+          notes: null
         });
       }
       

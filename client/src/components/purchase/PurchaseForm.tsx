@@ -142,13 +142,24 @@ const PurchaseForm: React.FC<PurchaseFormProps> = ({ onComplete }) => {
   const onSubmit = (data: z.infer<typeof purchaseFormSchema>) => {
     // Validate products
     const validProducts = products.filter(
-      (product) => product.name && product.unitPrice > 0 && product.quantity > 0
+      (product) => product.productId > 0 && product.name && product.unitPrice > 0 && product.quantity > 0
     );
 
     if (validProducts.length === 0) {
       toast({
         title: "Invalid products",
-        description: "Please add at least one valid product",
+        description: "Please add at least one valid product with a selected product from the dropdown",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Check if any product is missing a selection
+    const hasUnselectedProducts = products.some(product => !product.productId || product.productId <= 0);
+    if (hasUnselectedProducts) {
+      toast({
+        title: "Product selection required",
+        description: "Please select a product for each item from the dropdown",
         variant: "destructive",
       });
       return;

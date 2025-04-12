@@ -122,7 +122,18 @@ const SaleForm: React.FC<SaleFormProps> = ({ onComplete }) => {
     if (validProducts.length === 0) {
       toast({
         title: "Invalid products",
-        description: "Please add at least one valid product",
+        description: "Please add at least one valid product with a selected product from the dropdown",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Check if any product is missing a selection
+    const hasUnselectedProducts = productsUsed.some(product => !product.productId || product.productId <= 0);
+    if (hasUnselectedProducts) {
+      toast({
+        title: "Product selection required",
+        description: "Please select a product for each item from the dropdown",
         variant: "destructive",
       });
       return;
