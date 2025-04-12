@@ -1,10 +1,4 @@
-import { 
-  products, 
-  purchases, 
-  purchaseItems, 
-  sales, 
-  saleItems, 
-  inventoryAdjustments,
+import {
   type Product as ProductType,
   type InsertProduct as InsertProductType,
   type Purchase as PurchaseType,
