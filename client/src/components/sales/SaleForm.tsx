@@ -3,14 +3,18 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { PlusCircle } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import ProductUsedItem from "./ProductUsedItem";
+
+interface SaleFormProps {
+  onComplete?: () => void;
+}
 
 const saleFormSchema = z.object({
   customerName: z.string().min(1, { message: "Customer name is required" }),
@@ -25,7 +29,7 @@ interface ProductUsedData {
   quantity: number;
 }
 
-const SaleForm: React.FC = () => {
+const SaleForm: React.FC<SaleFormProps> = ({ onComplete }) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [productsUsed, setProductsUsed] = useState<ProductUsedData[]>([{ 
@@ -66,6 +70,11 @@ const SaleForm: React.FC = () => {
         productId: 0, 
         quantity: 0 
       }]);
+      
+      // Call onComplete if provided
+      if (onComplete) {
+        onComplete();
+      }
     },
     onError: (error) => {
       toast({
