@@ -143,7 +143,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           adjustmentType: "Incoming",
           quantity: item.quantity,
           reason: `Purchase: ${purchaseData.invoiceNumber}`,
-          notes: ""
+          notes: null
         });
       }
       
@@ -243,7 +243,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           adjustmentType: "Outgoing",
           quantity: item.quantity,
           reason: `Sale: ${saleData.customerName}`,
-          notes: ""
+          notes: null
         });
       }
       

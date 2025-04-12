@@ -212,7 +212,12 @@ export class MemStorage implements IStorage {
 
   async createInventoryAdjustment(adjustment: InsertInventoryAdjustment): Promise<InventoryAdjustment> {
     const id = this.currentInventoryAdjustmentId++;
-    const newAdjustment: InventoryAdjustment = { id, ...adjustment };
+    // Handle potential undefined notes field by setting to null
+    const newAdjustment: InventoryAdjustment = { 
+      id, 
+      ...adjustment,
+      notes: adjustment.notes || null, // Ensure notes is never undefined
+    };
     this.inventoryAdjustmentsMap.set(id, newAdjustment);
     return newAdjustment;
   }
