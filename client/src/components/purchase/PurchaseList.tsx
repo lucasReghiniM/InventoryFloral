@@ -26,9 +26,10 @@ interface Purchase {
 interface PurchaseListProps {
   purchases: Purchase[];
   isLoading: boolean;
+  onViewDetails: (purchaseId: number) => void;
 }
 
-const PurchaseList: React.FC<PurchaseListProps> = ({ purchases, isLoading }) => {
+const PurchaseList: React.FC<PurchaseListProps> = ({ purchases, isLoading, onViewDetails }) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -96,7 +97,11 @@ const PurchaseList: React.FC<PurchaseListProps> = ({ purchases, isLoading }) => 
                       ${purchase.totalAmount.toFixed(2)}
                     </TableCell>
                     <TableCell className="px-4 py-3 whitespace-nowrap text-sm text-neutral-800">
-                      <Button variant="ghost" className="h-8 w-8 p-0 text-primary hover:text-primary/90 hover:bg-primary/10">
+                      <Button 
+                        variant="ghost" 
+                        className="h-8 w-8 p-0 text-primary hover:text-primary/90 hover:bg-primary/10"
+                        onClick={() => onViewDetails(purchase.id)}
+                      >
                         <Eye className="h-4 w-4" />
                       </Button>
                       <Button

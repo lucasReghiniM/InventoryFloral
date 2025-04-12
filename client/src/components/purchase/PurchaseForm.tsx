@@ -3,14 +3,18 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { PlusCircle } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import ProductItem from "./ProductItem";
+
+interface PurchaseFormProps {
+  onComplete?: () => void;
+}
 
 const purchaseFormSchema = z.object({
   invoiceNumber: z.string().min(1, { message: "Invoice number is required" }),
@@ -28,7 +32,7 @@ interface ProductItemData {
   finalValue: number;
 }
 
-const PurchaseForm: React.FC = () => {
+const PurchaseForm: React.FC<PurchaseFormProps> = ({ onComplete }) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [products, setProducts] = useState<ProductItemData[]>([{ 
@@ -77,6 +81,11 @@ const PurchaseForm: React.FC = () => {
         quantity: 0, 
         finalValue: 0 
       }]);
+      
+      // Call onComplete if provided
+      if (onComplete) {
+        onComplete();
+      }
     },
     onError: (error) => {
       toast({

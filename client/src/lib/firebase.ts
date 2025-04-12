@@ -16,8 +16,7 @@ import {
   signOut,
   onAuthStateChanged,
   GoogleAuthProvider,
-  signInWithPopup,
-  User
+  signInWithPopup
 } from "firebase/auth";
 
 // Firebase configuration
@@ -61,6 +60,5 @@ export {
   getDoc, 
   updateDoc, 
   deleteDoc,
-  onAuthStateChanged,
-  User
+  onAuthStateChanged
 };

@@ -90,10 +90,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Purchase not found" });
       }
       
-      const purchaseItems = await storage.getPurchaseItems(id);
-      res.json({ ...purchase, items: purchaseItems });
+      res.json(purchase);
     } catch (error) {
       res.status(500).json({ message: "Failed to get purchase" });
+    }
+  });
+  
+  app.get("/api/purchases/:id/items", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const purchaseItems = await storage.getPurchaseItems(id);
+      res.json(purchaseItems);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get purchase items" });
     }
   });
 
@@ -173,10 +182,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Sale not found" });
       }
       
-      const saleItems = await storage.getSaleItems(id);
-      res.json({ ...sale, items: saleItems });
+      res.json(sale);
     } catch (error) {
       res.status(500).json({ message: "Failed to get sale" });
+    }
+  });
+  
+  app.get("/api/sales/:id/items", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const saleItems = await storage.getSaleItems(id);
+      res.json(saleItems);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get sale items" });
     }
   });
 
