@@ -308,7 +308,10 @@ export class FirebaseStorage implements IStorage {
       : 1;
     
     // Use document with ID as string
-    await updateDoc(doc(db, "saleItems", nextId.toString()), saleItem);
+    await addDoc(collection(db, "saleItems"), {
+      ...saleItem,
+      id: nextId
+    });
     
     return { id: nextId, ...saleItem };
   }
@@ -367,7 +370,10 @@ export class FirebaseStorage implements IStorage {
     };
     
     // Use document with ID as string
-    await updateDoc(doc(db, "inventoryAdjustments", nextId.toString()), adjustmentData);
+    await addDoc(collection(db, "inventoryAdjustments"), {
+      ...adjustmentData,
+      id: nextId
+    });
     
     return { 
       id: nextId, 
