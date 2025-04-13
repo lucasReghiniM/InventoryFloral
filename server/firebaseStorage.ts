@@ -335,12 +335,23 @@ export class FirebaseStorage implements IStorage {
 
   // Purchase methods
   async getPurchases(): Promise<Purchase[]> {
+    console.log("Getting all purchases from Firebase");
     const purchasesRef = collection(db, "purchases");
     const snapshot = await getDocs(purchasesRef);
-    return snapshot.docs.map(doc => {
+    
+    console.log(`Found ${snapshot.docs.length} purchase documents`);
+    
+    const purchases = snapshot.docs.map(doc => {
+      console.log(`Processing purchase document with ID: ${doc.id}`);
       const data = doc.data();
+      console.log(`Purchase data:`, data);
+      
+      // Check if the document has an ID field in its data
+      const id = data.id ? Number(data.id) : Number(doc.id);
+      console.log(`Using purchase ID: ${id}`);
+      
       return {
-        id: Number(doc.id),
+        id,
         invoiceNumber: data.invoiceNumber,
         orderDate: convertTimestampToString(data.orderDate),
         supplier: data.supplier,
@@ -348,6 +359,9 @@ export class FirebaseStorage implements IStorage {
         totalAmount: data.totalAmount
       };
     });
+    
+    console.log(`Returning ${purchases.length} purchases`);
+    return purchases;
   }
 
   async getPurchase(id: number): Promise<Purchase | undefined> {
@@ -368,33 +382,39 @@ export class FirebaseStorage implements IStorage {
   }
 
   async createPurchase(purchase: InsertPurchase): Promise<Purchase> {
-    // Get next ID
-    const purchasesRef = collection(db, "purchases");
-    const snapshot = await getDocs(purchasesRef);
-    const nextId = snapshot.docs.length > 0 
-      ? Math.max(...snapshot.docs.map(doc => Number(doc.id))) + 1 
-      : 1;
+    console.log("Creating purchase with data:", purchase);
+    
+    // Generate UUID for purchase
+    const purchaseId = uuidv4();
+    console.log("Generated purchase ID (UUID):", purchaseId);
     
     // Convert date string to Firestore timestamp
     const purchaseData = {
       ...purchase,
+      id: purchaseId, // Store the UUID as the ID field
       orderDate: new Date(purchase.orderDate)
     };
     
-    // Create document with the calculated ID (as string)
-    const docRef = doc(db, "purchases", nextId.toString());
-    await setDoc(docRef, {
-      ...purchaseData,
-      id: nextId
-    });
-    
-    console.log("Purchase created with ID:", nextId);
-    
-    return { 
-      id: nextId, 
-      ...purchase,
-      orderDate: new Date(purchase.orderDate).toISOString()
-    };
+    try {
+      // Create document with UUID as document ID
+      const docRef = doc(db, "purchases", purchaseId);
+      await setDoc(docRef, purchaseData);
+      
+      console.log("Purchase created successfully with ID:", purchaseId);
+      
+      // Return the created purchase with proper date format
+      return { 
+        id: purchaseId, 
+        invoiceNumber: purchase.invoiceNumber,
+        orderDate: new Date(purchase.orderDate).toISOString(),
+        supplier: purchase.supplier,
+        deliveryCost: purchase.deliveryCost,
+        totalAmount: purchase.totalAmount
+      };
+    } catch (error) {
+      console.error("Error creating purchase:", error);
+      throw error;
+    }
   }
 
   async deletePurchase(id: number): Promise<boolean> {

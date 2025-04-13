@@ -56,7 +56,7 @@ export const insertPurchaseSchema = z.object({
 });
 
 export type Purchase = {
-  id: number;
+  id: string; // Using string ID (UUID) for consistency with products
   invoiceNumber: string;
   orderDate: string;
   supplier: string;
@@ -68,7 +68,7 @@ export type InsertPurchase = z.infer<typeof insertPurchaseSchema>;
 
 // Purchase items schemas
 export const insertPurchaseItemSchema = z.object({
-  purchaseId: z.number().int().positive(),
+  purchaseId: z.string().min(1), // Accept UUID as purchase ID
   productId: z.union([
     z.string(), // Accept any string ID (UUID or not)
     z.number() // Also accept number IDs for backwards compatibility
@@ -79,8 +79,8 @@ export const insertPurchaseItemSchema = z.object({
 });
 
 export type PurchaseItem = {
-  id: number;
-  purchaseId: number;
+  id: string; // Using string ID (UUID) for consistency
+  purchaseId: string; // Using string ID (UUID) for consistency with purchases
   productId: string | number; // Support both string and number IDs
   quantity: number;
   unitPrice: number;
