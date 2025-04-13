@@ -45,12 +45,19 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ productId, onClose }) =
   const {
     data: product,
     isLoading,
+    isError,
+    error,
     refetch,
   } = useQuery({
     queryKey: ["/api/products", productId],
     queryFn: async () => {
-      const response = await apiRequest(`/api/products/${productId}`);
-      return response;
+      try {
+        const response = await apiRequest(`/api/products/${productId}`);
+        return response;
+      } catch (error) {
+        console.error("Error fetching product:", error);
+        throw error;
+      }
     },
     refetchOnWindowFocus: false,
   });
@@ -191,6 +198,35 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ productId, onClose }) =
           <Skeleton className="h-6 w-full" />
           <Skeleton className="h-6 w-full" />
           <Skeleton className="h-6 w-full" />
+        </CardContent>
+      </Card>
+    );
+  }
+  
+  if (isError || !product) {
+    return (
+      <Card>
+        <CardHeader>
+          <div className="flex items-center">
+            <Button variant="ghost" size="sm" onClick={onClose}>
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Back
+            </Button>
+            <CardTitle className="ml-2">Product Not Found</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">
+            The product could not be found or there was an error loading the product details.
+            This might be because the product ID format has changed or the product has been deleted.
+          </p>
+          <Button 
+            variant="outline" 
+            onClick={onClose} 
+            className="mt-4"
+          >
+            Go Back
+          </Button>
         </CardContent>
       </Card>
     );
