@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./firebaseStorage";
+// Usando MemStorage temporariamente para resolver problemas de conexão com Firebase
+import { storage } from "./storage";
 import {
   insertProductSchema,
   insertPurchaseSchema,
@@ -13,11 +14,6 @@ import { z } from "zod";
 import path from "path";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Rota para a página de demonstração
-  app.get('/demo', (req, res) => {
-    res.sendFile(path.resolve('./client/demo.html'));
-  });
-
   // API routes with /api prefix
 
   // Product routes
@@ -33,6 +29,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/products/:id", async (req, res) => {
     try {
       const id = req.params.id;
+      // Usar id como string, que é o que o storage espera para produtos
       const product = await storage.getProduct(id);
       
       if (!product) {
@@ -366,7 +363,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/inventory-adjustments/product/:productId", async (req, res) => {
     try {
-      const productId = parseInt(req.params.productId);
+      // Usar productId como string, conforme esperado pela interface do storage
+      const productId = req.params.productId;
       const adjustments = await storage.getInventoryAdjustmentsForProduct(productId);
       res.json(adjustments);
     } catch (error) {

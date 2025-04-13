@@ -1,6 +1,8 @@
 import {
   type Product as ProductType,
   type InsertProduct as InsertProductType,
+  type Supplier as SupplierType,
+  type InsertSupplier as InsertSupplierType,
   type Purchase as PurchaseType,
   type InsertPurchase as InsertPurchaseType,
   type PurchaseItem as PurchaseItemType,
@@ -12,6 +14,7 @@ import {
   type InventoryAdjustment as InventoryAdjustmentType,
   type InsertInventoryAdjustment as InsertInventoryAdjustmentType
 } from "@shared/schema";
+import crypto from 'crypto';
 
 // Export types for use in firebaseStorage
 export type Product = ProductType;
@@ -114,7 +117,7 @@ export class MemStorage implements IStorage {
 
   async createProduct(product: InsertProduct): Promise<Product> {
     const newProduct: Product = {
-      id: product.id,
+      id: product.id || crypto.randomUUID(), // Garantir que sempre temos um ID
       name: product.name,
       currentStock: product.currentStock,
       suppliers: product.suppliers || []
