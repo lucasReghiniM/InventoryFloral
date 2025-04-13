@@ -7,6 +7,8 @@ import TabNavigation from "./components/TabNavigation";
 import Purchases from "./pages/Purchases";
 import Sales from "./pages/Sales";
 import Inventory from "./pages/Inventory";
+import Products from "./pages/Products";
+import Suppliers from "./pages/Suppliers";
 import Login from "./pages/Login";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -51,6 +53,8 @@ function MainApp() {
         {activeTab === "purchases" && <Purchases />}
         {activeTab === "sales" && <Sales />}
         {activeTab === "inventory" && <Inventory />}
+        {activeTab === "products" && <Products />}
+        {activeTab === "suppliers" && <Suppliers />}
       </div>
     </Layout>
   );
