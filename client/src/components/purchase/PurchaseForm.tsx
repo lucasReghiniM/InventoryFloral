@@ -2,14 +2,16 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Check, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, getQueryFn } from "@/lib/queryClient";
 import ProductItem from "./ProductItem";
 
 interface PurchaseFormProps {
@@ -47,6 +49,14 @@ const PurchaseForm: React.FC<PurchaseFormProps> = ({ onComplete }) => {
   const { data: allProducts, isLoading: isProductsLoading } = useQuery({
     queryKey: ["/api/products"],
   });
+  
+  const { data: suppliers = [] } = useQuery({
+    queryKey: ["/api/suppliers"],
+    queryFn: getQueryFn({ on401: "returnNull" }),
+  });
+  
+  const [supplierPopoverOpen, setSupplierPopoverOpen] = useState(false);
+  const [selectedSupplierId, setSelectedSupplierId] = useState<string>("");
 
   const { register, handleSubmit, reset, formState: { errors }, watch, setValue } = useForm<z.infer<typeof purchaseFormSchema>>({
     resolver: zodResolver(purchaseFormSchema),

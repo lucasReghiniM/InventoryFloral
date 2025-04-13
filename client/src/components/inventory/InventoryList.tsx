@@ -82,7 +82,8 @@ const InventoryList: React.FC<InventoryListProps> = ({ products, isLoading, onRe
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
       {products.map((product) => {
         const stockStatus = getStockStatus(product.currentStock);
-        const inventoryValue = product.unitPrice * product.currentStock;
+        const unitPrice = product.unitPrice || 0;
+        const inventoryValue = unitPrice * product.currentStock;
         
         return (
           <Card key={product.id} className="overflow-hidden">
@@ -107,7 +108,7 @@ const InventoryList: React.FC<InventoryListProps> = ({ products, isLoading, onRe
                 </div>
                 <div className="flex justify-between mb-1">
                   <span>Unit Price:</span>
-                  <span className="font-medium">${product.unitPrice.toFixed(2)}</span>
+                  <span className="font-medium">${product.unitPrice ? product.unitPrice.toFixed(2) : '0.00'}</span>
                 </div>
                 <div className="flex justify-between mb-1">
                   <span>Inventory Value:</span>
