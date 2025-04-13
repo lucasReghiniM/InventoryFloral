@@ -1,3 +1,4 @@
+import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
@@ -13,6 +14,15 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
+// Initialize Firebase app
 initializeApp(firebaseConfig);
 
-createRoot(document.getElementById("root")!).render(<App />);
+// Render the React app
+const rootElement = document.getElementById("root");
+if (rootElement) {
+  createRoot(rootElement).render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  );
+}
