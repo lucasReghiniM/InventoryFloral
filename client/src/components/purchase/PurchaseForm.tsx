@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest, getQueryFn } from "@/lib/queryClient";
 import ProductItem from "./ProductItem";
+import type { Product, Supplier } from "@shared/schema";
 
 interface PurchaseFormProps {
   onComplete?: () => void;
@@ -46,11 +47,25 @@ const PurchaseForm: React.FC<PurchaseFormProps> = ({ onComplete }) => {
     finalValue: 0 
   }]);
 
-  const { data: allProducts, isLoading: isProductsLoading } = useQuery({
+  const { data: productsData = [], isLoading: isProductsLoading } = useQuery<Product[]>({
     queryKey: ["/api/products"],
+    queryFn: getQueryFn({ on401: "returnNull" }),
   });
+
+  // Transform products to the format expected by ProductItem
+  const allProducts = React.useMemo(() => {
+    return productsData.map(product => ({
+      id: product.id as unknown as number, // ProductItem expects number but our IDs are strings
+      name: product.name,
+      unitPrice: product.suppliers && product.suppliers.length > 0 
+        ? product.suppliers[0].priceHistory && product.suppliers[0].priceHistory.length > 0 
+          ? product.suppliers[0].priceHistory[0].price 
+          : 0
+        : 0
+    }));
+  }, [productsData]);
   
-  const { data: suppliers = [] } = useQuery({
+  const { data: suppliers = [] } = useQuery<Supplier[]>({
     queryKey: ["/api/suppliers"],
     queryFn: getQueryFn({ on401: "returnNull" }),
   });
@@ -71,7 +86,7 @@ const PurchaseForm: React.FC<PurchaseFormProps> = ({ onComplete }) => {
   const deliveryCost = watch("deliveryCost");
 
   const createPurchaseMutation = useMutation({
-    mutationFn: (data: any) => apiRequest("POST", "/api/purchases", data),
+    mutationFn: (data: any) => apiRequest("POST", "/api/purchases", data as any),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/purchases"] });
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
@@ -230,12 +245,46 @@ const PurchaseForm: React.FC<PurchaseFormProps> = ({ onComplete }) => {
             
             <div>
               <Label htmlFor="supplier" className="mb-1">Supplier Name</Label>
-              <Input
-                id="supplier"
-                placeholder="Flower Wholesaler Inc."
-                {...register("supplier")}
-                className={errors.supplier ? "border-red-500" : ""}
-              />
+              <Popover open={supplierPopoverOpen} onOpenChange={setSupplierPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={supplierPopoverOpen}
+                    className={`w-full justify-between ${errors.supplier ? "border-red-500" : ""}`}
+                  >
+                    {watch("supplier") || "Select a supplier..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0">
+                  <Command>
+                    <CommandInput placeholder="Search suppliers..." />
+                    <CommandEmpty>No supplier found.</CommandEmpty>
+                    <CommandGroup>
+                      {suppliers.map((supplier) => (
+                        <CommandItem
+                          key={supplier.id}
+                          value={supplier.id}
+                          onSelect={() => {
+                            setValue("supplier", supplier.name);
+                            setSelectedSupplierId(supplier.id);
+                            setSupplierPopoverOpen(false);
+                          }}
+                        >
+                          <Check
+                            className={`mr-2 h-4 w-4 ${
+                              watch("supplier") === supplier.name ? "opacity-100" : "opacity-0"
+                            }`}
+                          />
+                          {supplier.name}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              <input type="hidden" {...register("supplier")} />
               {errors.supplier && (
                 <p className="text-red-500 text-sm mt-1">{errors.supplier.message}</p>
               )}

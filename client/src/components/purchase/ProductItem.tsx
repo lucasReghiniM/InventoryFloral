@@ -50,7 +50,15 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, products, onRemove, 
   }, [product.unitPrice, product.quantity]);
 
   const handleExistingProductSelect = (productId: string) => {
-    const selectedProduct = products.find(p => p.id === parseInt(productId));
+    // Handle when product ID is a string or number
+    const selectedProduct = products.find(p => {
+      if (typeof p.id === 'string') {
+        return p.id === productId;
+      } else {
+        return p.id === parseInt(productId);
+      }
+    });
+    
     if (selectedProduct) {
       onChange({
         productId: selectedProduct.id,
@@ -76,7 +84,13 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, products, onRemove, 
                   className="w-full justify-between"
                 >
                   {product.productId > 0
-                    ? products.find((p) => p.id === product.productId)?.name
+                    ? products.find((p) => {
+                        if (typeof p.id === 'string') {
+                          return p.id === product.productId.toString();
+                        } else {
+                          return p.id === product.productId;
+                        }
+                      })?.name
                     : "Search products..."}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
@@ -94,7 +108,9 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, products, onRemove, 
                       >
                         <Check
                           className={`mr-2 h-4 w-4 ${
-                            product.productId === p.id ? "opacity-100" : "opacity-0"
+                            (typeof p.id === 'string' && p.id === product.productId.toString()) || 
+                            (typeof p.id === 'number' && p.id === product.productId) 
+                              ? "opacity-100" : "opacity-0"
                           }`}
                         />
                         {p.name}
