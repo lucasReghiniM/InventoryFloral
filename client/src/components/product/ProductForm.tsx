@@ -25,7 +25,6 @@ interface ProductFormProps {
 
 const validationSchema = insertProductSchema.extend({
   name: z.string().min(1, "Product name is required"),
-  currentStock: z.number().min(0, "Stock must be 0 or greater"),
 });
 
 type FormValues = z.infer<typeof validationSchema>;
@@ -40,7 +39,6 @@ const ProductForm: React.FC<ProductFormProps> = ({ onComplete }) => {
     resolver: zodResolver(validationSchema),
     defaultValues: {
       name: "",
-      currentStock: 0,
       suppliers: [],
     },
   });
@@ -125,24 +123,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ onComplete }) => {
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="currentStock"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Initial Stock</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="0"
-                      {...field}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+
 
             <div className="space-y-4">
               <div>
