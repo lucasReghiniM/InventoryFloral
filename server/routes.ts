@@ -404,6 +404,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ? adjustmentData.quantity 
         : -adjustmentData.quantity;
         
+      // Pass product ID directly - can be either string or number
       await storage.updateProductStock(adjustmentData.productId, quantityChange);
       
       res.status(201).json(adjustment);

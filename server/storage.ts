@@ -36,11 +36,11 @@ export type InsertInventoryAdjustment = InsertInventoryAdjustmentType;
 export interface IStorage {
   // Product methods
   getProducts(): Promise<Product[]>;
-  getProduct(id: string): Promise<Product | undefined>;
+  getProduct(id: string | number): Promise<Product | undefined>;
   createProduct(product: InsertProduct): Promise<Product>;
-  updateProduct(id: string, product: Partial<InsertProduct>): Promise<Product | undefined>;
+  updateProduct(id: string | number, product: Partial<InsertProduct>): Promise<Product | undefined>;
   updateProductStock(id: string | number, quantity: number): Promise<Product | undefined>;
-  deleteProduct(id: string): Promise<boolean>;
+  deleteProduct(id: string | number): Promise<boolean>;
   
   // Supplier methods
   getSuppliers(): Promise<Supplier[]>;
@@ -70,7 +70,7 @@ export interface IStorage {
   
   // Inventory adjustment methods
   getInventoryAdjustments(): Promise<InventoryAdjustment[]>;
-  getInventoryAdjustmentsForProduct(productId: string): Promise<InventoryAdjustment[]>;
+  getInventoryAdjustmentsForProduct(productId: string | number): Promise<InventoryAdjustment[]>;
   createInventoryAdjustment(adjustment: InsertInventoryAdjustment): Promise<InventoryAdjustment>;
 }
 
@@ -110,8 +110,10 @@ export class MemStorage implements IStorage {
     return Array.from(this.productsMap.values());
   }
 
-  async getProduct(id: string): Promise<Product | undefined> {
-    return this.productsMap.get(id);
+  async getProduct(id: string | number): Promise<Product | undefined> {
+    // Convert id to string if it's a number
+    const stringId = id.toString();
+    return this.productsMap.get(stringId);
   }
 
   async createProduct(product: InsertProduct): Promise<Product> {
@@ -130,12 +132,14 @@ export class MemStorage implements IStorage {
     return newProduct;
   }
 
-  async updateProduct(id: string, product: Partial<InsertProduct>): Promise<Product | undefined> {
-    const existingProduct = this.productsMap.get(id);
+  async updateProduct(id: string | number, product: Partial<InsertProduct>): Promise<Product | undefined> {
+    // Convert id to string if it's a number
+    const stringId = id.toString();
+    const existingProduct = this.productsMap.get(stringId);
     if (!existingProduct) return undefined;
 
     const updatedProduct: Product = { ...existingProduct, ...product };
-    this.productsMap.set(id, updatedProduct);
+    this.productsMap.set(stringId, updatedProduct);
     return updatedProduct;
   }
 
@@ -153,8 +157,10 @@ export class MemStorage implements IStorage {
     return updatedProduct;
   }
 
-  async deleteProduct(id: string): Promise<boolean> {
-    return this.productsMap.delete(id);
+  async deleteProduct(id: string | number): Promise<boolean> {
+    // Convert id to string if it's a number
+    const stringId = id.toString();
+    return this.productsMap.delete(stringId);
   }
 
   // Supplier methods
@@ -252,9 +258,10 @@ export class MemStorage implements IStorage {
     return Array.from(this.inventoryAdjustmentsMap.values());
   }
 
-  async getInventoryAdjustmentsForProduct(productId: string): Promise<InventoryAdjustment[]> {
+  async getInventoryAdjustmentsForProduct(productId: string | number): Promise<InventoryAdjustment[]> {
+    const productIdStr = productId.toString();
     return Array.from(this.inventoryAdjustmentsMap.values()).filter(
-      adjustment => adjustment.productId === productId
+      adjustment => adjustment.productId.toString() === productIdStr
     );
   }
 
