@@ -39,7 +39,7 @@ export interface IStorage {
   getProduct(id: string): Promise<Product | undefined>;
   createProduct(product: InsertProduct): Promise<Product>;
   updateProduct(id: string, product: Partial<InsertProduct>): Promise<Product | undefined>;
-  updateProductStock(id: string, quantity: number): Promise<Product | undefined>;
+  updateProductStock(id: string | number, quantity: number): Promise<Product | undefined>;
   deleteProduct(id: string): Promise<boolean>;
   
   // Supplier methods
@@ -139,15 +139,17 @@ export class MemStorage implements IStorage {
     return updatedProduct;
   }
 
-  async updateProductStock(id: string, quantity: number): Promise<Product | undefined> {
-    const product = this.productsMap.get(id);
+  async updateProductStock(id: string | number, quantity: number): Promise<Product | undefined> {
+    // Convert id to string if it's a number
+    const stringId = id.toString();
+    const product = this.productsMap.get(stringId);
     if (!product) return undefined;
 
     const updatedProduct: Product = { 
       ...product, 
       currentStock: product.currentStock + quantity 
     };
-    this.productsMap.set(id, updatedProduct);
+    this.productsMap.set(stringId, updatedProduct);
     return updatedProduct;
   }
 

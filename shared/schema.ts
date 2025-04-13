@@ -81,7 +81,7 @@ export const insertPurchaseItemSchema = z.object({
 export type PurchaseItem = {
   id: number;
   purchaseId: number;
-  productId: string; // Changed to UUID string
+  productId: string | number; // Support both string and number IDs
   quantity: number;
   unitPrice: number;
   finalValue: number;
@@ -110,14 +110,17 @@ export type InsertSale = z.infer<typeof insertSaleSchema>;
 // Sale items schemas
 export const insertSaleItemSchema = z.object({
   saleId: z.number().int().positive(),
-  productId: z.string().uuid(), // Changed to UUID string
+  productId: z.union([
+    z.string(), // Accept any string ID (UUID or not)
+    z.number() // Also accept number IDs for backwards compatibility
+  ]),
   quantity: z.number().int().positive(),
 });
 
 export type SaleItem = {
   id: number;
   saleId: number;
-  productId: string; // Changed to UUID string
+  productId: string | number; // Support both string and number IDs
   quantity: number;
 };
 
@@ -125,7 +128,10 @@ export type InsertSaleItem = z.infer<typeof insertSaleItemSchema>;
 
 // Inventory adjustments schemas
 export const insertInventoryAdjustmentSchema = z.object({
-  productId: z.string().uuid(), // Changed to UUID string
+  productId: z.union([
+    z.string(), // Accept any string ID (UUID or not)
+    z.number() // Also accept number IDs for backwards compatibility
+  ]),
   adjustmentDate: z.string().min(1), // Accept string dates
   adjustmentType: z.string().min(1),
   quantity: z.number().int().positive(),
@@ -135,7 +141,7 @@ export const insertInventoryAdjustmentSchema = z.object({
 
 export type InventoryAdjustment = {
   id: number;
-  productId: string; // Changed to UUID string
+  productId: string | number; // Support both string and number IDs
   adjustmentDate: string;
   adjustmentType: string;
   quantity: number;
