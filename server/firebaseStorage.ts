@@ -163,19 +163,29 @@ export class FirebaseStorage implements IStorage {
     try {
       // For suppliers, we're using the UUID directly as the document ID
       if (!supplier.id) {
+        console.error("Supplier ID is missing in createSupplier");
         throw new Error("Supplier ID is required");
       }
       
+      console.log("Creating supplier with ID:", supplier.id, "and name:", supplier.name);
+      
+      // Create document with the supplier's UUID as the ID
       await setDoc(doc(db, "suppliers", supplier.id), {
         name: supplier.name
       });
+      
+      console.log("Supplier created successfully!");
       
       return {
         id: supplier.id,
         name: supplier.name
       };
     } catch (error) {
-      console.error("Error creating supplier:", error);
+      console.error("Detailed error creating supplier:", error);
+      if (error instanceof Error) {
+        console.error("Error message:", error.message);
+        console.error("Error stack:", error.stack);
+      }
       throw error;
     }
   }

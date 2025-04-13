@@ -60,20 +60,23 @@ const ProductForm: React.FC<ProductFormProps> = ({ onComplete }) => {
 
   const onSubmit = async (data: FormValues) => {
     try {
-      // Transform suppliers to the format required by the API
-      const formattedSuppliers = suppliers.map((s) => ({
-        name: s.name,
-        priceHistory: [
-          {
-            date: new Date().toISOString(),
-            price: s.price,
-          },
-        ],
-      }));
+      // Transform suppliers to the format required by the API (if any)
+      const formattedSuppliers = suppliers.length > 0 
+        ? suppliers.map((s) => ({
+            name: s.name,
+            priceHistory: [
+              {
+                date: new Date().toISOString(),
+                price: s.price,
+              },
+            ],
+          }))
+        : [];
 
       const productData = {
         ...data,
         id: uuidv4(), // Generate UUID for product
+        currentStock: 0, // Default to 0 stock for new products
         suppliers: formattedSuppliers,
       };
 
@@ -127,7 +130,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ onComplete }) => {
 
             <div className="space-y-4">
               <div>
-                <FormLabel>Product Suppliers</FormLabel>
+                <FormLabel>Product Suppliers (Optional)</FormLabel>
                 <div className="mt-2 space-y-4">
                   {suppliers.map((supplier, index) => (
                     <div
