@@ -19,7 +19,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, setActiveTab }
           }`}
         >
           <ShoppingCart className="mr-2 h-4 w-4" />
-          Purchases
+          Compras
         </button>
         <button
           onClick={() => setActiveTab("sales")}
@@ -30,7 +30,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, setActiveTab }
           }`}
         >
           <Receipt className="mr-2 h-4 w-4" />
-          Sales
+          Vendas
         </button>
         <button
           onClick={() => setActiveTab("inventory")}
@@ -41,7 +41,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, setActiveTab }
           }`}
         >
           <Package className="mr-2 h-4 w-4" />
-          Inventory
+          Inventario
         </button>
         <button
           onClick={() => setActiveTab("products")}
@@ -52,7 +52,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, setActiveTab }
           }`}
         >
           <Box className="mr-2 h-4 w-4" />
-          Products
+          Produtos
         </button>
         <button
           onClick={() => setActiveTab("suppliers")}
@@ -63,7 +63,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, setActiveTab }
           }`}
         >
           <Users className="mr-2 h-4 w-4" />
-          Suppliers
+          Fornecedores
         </button>
       </div>
     </div>

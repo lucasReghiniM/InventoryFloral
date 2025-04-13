@@ -42,7 +42,7 @@ const Purchases: React.FC = () => {
       ) : (
         <>
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold">Purchases</h1>
+            <h1 className="text-2xl font-bold">Compras</h1>
             <Button 
               onClick={() => setShowNewForm(!showNewForm)}
               variant={showNewForm ? "outline" : "default"}
@@ -56,8 +56,8 @@ const Purchases: React.FC = () => {
           {showNewForm && (
             <Card>
               <CardHeader>
-                <CardTitle>New Purchase</CardTitle>
-                <CardDescription>Add a new purchase to your inventory</CardDescription>
+                <CardTitle>Nova compra</CardTitle>
+                <CardDescription>Adicione uma nova compra no seu inventario</CardDescription>
               </CardHeader>
               <CardContent>
                 <PurchaseForm onComplete={() => setShowNewForm(false)} />
