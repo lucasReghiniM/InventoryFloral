@@ -28,7 +28,7 @@ const purchaseFormSchema = z.object({
 
 interface ProductItemData {
   id: string;
-  productId: number;
+  productId: string | number; // Support both string and number IDs
   name: string;
   unitPrice: number;
   quantity: number;
@@ -40,7 +40,7 @@ const PurchaseForm: React.FC<PurchaseFormProps> = ({ onComplete }) => {
   const queryClient = useQueryClient();
   const [products, setProducts] = useState<ProductItemData[]>([{ 
     id: Date.now().toString(), 
-    productId: 0,
+    productId: "", // Use empty string for initial state
     name: "", 
     unitPrice: 0, 
     quantity: 0, 
@@ -100,7 +100,7 @@ const PurchaseForm: React.FC<PurchaseFormProps> = ({ onComplete }) => {
       reset();
       setProducts([{ 
         id: Date.now().toString(), 
-        productId: 0,
+        productId: "", // Use empty string for initial state
         name: "", 
         unitPrice: 0, 
         quantity: 0, 
@@ -126,7 +126,7 @@ const PurchaseForm: React.FC<PurchaseFormProps> = ({ onComplete }) => {
       ...products,
       { 
         id: Date.now().toString(), 
-        productId: 0,
+        productId: "", // Use empty string for initial state
         name: "", 
         unitPrice: 0, 
         quantity: 0, 
