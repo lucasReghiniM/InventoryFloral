@@ -1,5 +1,5 @@
 import React from "react";
-import { Flower } from "lucide-react";
+import { Bath } from "lucide-react";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -12,11 +12,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <header className="py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <Flower className="text-primary h-6 w-6 mr-3" />
-              <h1 className="text-2xl font-semibold text-neutral-800">Giovanna Lisianthus</h1>
+              <Bath className="text-primary h-6 w-6 mr-3" />
+              <h1 className="text-2xl font-semibold text-neutral-800">Bloom Tracker</h1>
             </div>
             <div className="text-sm text-neutral-800">
-              <span className="hidden sm:inline">Bem vindo, </span>Floristas
+              <span className="hidden sm:inline">Welcome back, </span>Florist
             </div>
           </div>
         </header>

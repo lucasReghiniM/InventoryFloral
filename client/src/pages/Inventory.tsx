@@ -40,7 +40,7 @@ const Inventory: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h2 className="text-xl font-semibold">Inventorio atual</h2>
+        <h2 className="text-xl font-semibold">Current Inventory</h2>
         
         <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-2">
           <div className="relative">

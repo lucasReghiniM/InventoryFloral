@@ -42,11 +42,11 @@ export default function Products() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold">Produtos</h2>
+        <h2 className="text-3xl font-bold">Products</h2>
         {!showForm && !selectedProductId && (
           <Button onClick={handleAddNew} className="flex items-center gap-1">
             <Plus className="h-4 w-4" />
-            Adicionar novo produto
+            Add New Product
           </Button>
         )}
       </div>
