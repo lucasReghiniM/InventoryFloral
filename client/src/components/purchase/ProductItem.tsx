@@ -17,14 +17,14 @@ import {
 } from "@/components/ui/popover";
 
 interface Product {
-  id: number;
+  id: string | number; // Support both string and number IDs
   name: string;
   unitPrice: number;
 }
 
 interface ProductItemData {
   id: string;
-  productId: number;
+  productId: string | number; // Support both string and number IDs 
   name: string;
   unitPrice: number;
   quantity: number;
@@ -50,22 +50,38 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, products, onRemove, 
   }, [product.unitPrice, product.quantity]);
 
   const handleExistingProductSelect = (productId: string) => {
+    console.log("Selected product ID:", productId);
+    console.log("Products available:", products);
+    
     // Handle when product ID is a string or number
     const selectedProduct = products.find(p => {
+      console.log("Comparing product:", p);
+      console.log("Product ID type:", typeof p.id, "Value:", p.id);
+      console.log("Selected ID type:", typeof productId, "Value:", productId);
+      
       if (typeof p.id === 'string') {
         return p.id === productId;
-      } else {
+      } else if (typeof p.id === 'number') {
         return p.id === parseInt(productId);
+      } else {
+        // Handle as string as fallback
+        return String(p.id) === productId;
       }
     });
     
+    console.log("Selected product:", selectedProduct);
+    
     if (selectedProduct) {
-      onChange({
+      const updatedData = {
         productId: selectedProduct.id,
         name: selectedProduct.name,
         unitPrice: selectedProduct.unitPrice
-      });
+      };
+      console.log("Updating product with:", updatedData);
+      onChange(updatedData);
       setOpen(false);
+    } else {
+      console.error("Product not found in product list");
     }
   };
 
@@ -83,14 +99,18 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, products, onRemove, 
                   aria-expanded={open}
                   className="w-full justify-between"
                 >
-                  {product.productId > 0
+                  {product.productId 
                     ? products.find((p) => {
-                        if (typeof p.id === 'string') {
-                          return p.id === product.productId.toString();
-                        } else {
+                        // Handle either string or number IDs
+                        if (typeof product.productId === 'string') {
                           return p.id === product.productId;
+                        } else if (typeof product.productId === 'number' && product.productId > 0) {
+                          return typeof p.id === 'number' 
+                            ? p.id === product.productId
+                            : p.id === product.productId.toString();
                         }
-                      })?.name
+                        return false;
+                      })?.name || product.name
                     : "Search products..."}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>

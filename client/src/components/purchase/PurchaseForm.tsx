@@ -55,7 +55,7 @@ const PurchaseForm: React.FC<PurchaseFormProps> = ({ onComplete }) => {
   // Transform products to the format expected by ProductItem
   const allProducts = React.useMemo(() => {
     return productsData.map(product => ({
-      id: product.id as unknown as number, // ProductItem expects number but our IDs are strings
+      id: product.id, // Keep IDs as strings since we now support string IDs in ProductItem
       name: product.name,
       unitPrice: product.suppliers && product.suppliers.length > 0 
         ? product.suppliers[0].priceHistory && product.suppliers[0].priceHistory.length > 0 
@@ -165,9 +165,19 @@ const PurchaseForm: React.FC<PurchaseFormProps> = ({ onComplete }) => {
   };
 
   const onSubmit = (data: z.infer<typeof purchaseFormSchema>) => {
-    // Validate products
+    // Validate products - check for valid product ID (string or number)
     const validProducts = products.filter(
-      (product) => product.productId > 0 && product.name && product.unitPrice > 0 && product.quantity > 0
+      (product) => {
+        // Check if productId is valid based on its type
+        let hasValidId = false;
+        if (typeof product.productId === 'string') {
+          hasValidId = Boolean(product.productId) && product.productId.length > 0;
+        } else if (typeof product.productId === 'number') {
+          hasValidId = product.productId > 0;
+        }
+        
+        return hasValidId && product.name && product.unitPrice > 0 && product.quantity > 0;
+      }
     );
 
     if (validProducts.length === 0) {
@@ -180,7 +190,16 @@ const PurchaseForm: React.FC<PurchaseFormProps> = ({ onComplete }) => {
     }
     
     // Check if any product is missing a selection
-    const hasUnselectedProducts = products.some(product => !product.productId || product.productId <= 0);
+    const hasUnselectedProducts = products.some(product => {
+      const productId = product.productId;
+      if (typeof productId === 'string') {
+        return !productId || productId.length === 0;
+      } else if (typeof productId === 'number') {
+        return !productId || productId <= 0;
+      }
+      return true; // If productId is undefined or any other type, consider it unselected
+    });
+    
     if (hasUnselectedProducts) {
       toast({
         title: "Product selection required",
