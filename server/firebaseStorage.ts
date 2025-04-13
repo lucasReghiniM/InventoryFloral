@@ -381,11 +381,14 @@ export class FirebaseStorage implements IStorage {
       orderDate: new Date(purchase.orderDate)
     };
     
-    // Use document with ID as string
-    await addDoc(collection(db, "purchases"), {
+    // Create document with the calculated ID (as string)
+    const docRef = doc(db, "purchases", nextId.toString());
+    await setDoc(docRef, {
       ...purchaseData,
       id: nextId
     });
+    
+    console.log("Purchase created with ID:", nextId);
     
     return { 
       id: nextId, 
@@ -434,11 +437,14 @@ export class FirebaseStorage implements IStorage {
       ? Math.max(...snapshot.docs.map(doc => Number(doc.id))) + 1 
       : 1;
     
-    // Use document with ID as string
-    await addDoc(collection(db, "purchaseItems"), {
+    // Create document with the calculated ID (as string)
+    const docRef = doc(db, "purchaseItems", nextId.toString());
+    await setDoc(docRef, {
       ...purchaseItem,
       id: nextId
     });
+    
+    console.log("Purchase item created with ID:", nextId);
     
     return { id: nextId, ...purchaseItem };
   }
@@ -490,11 +496,14 @@ export class FirebaseStorage implements IStorage {
       saleDate: new Date(sale.saleDate)
     };
     
-    // Use document with ID as string
-    await addDoc(collection(db, "sales"), {
+    // Create document with the calculated ID (as string)
+    const docRef = doc(db, "sales", nextId.toString());
+    await setDoc(docRef, {
       ...saleData,
       id: nextId
     });
+    
+    console.log("Sale created with ID:", nextId);
     
     return { 
       id: nextId, 
@@ -543,11 +552,14 @@ export class FirebaseStorage implements IStorage {
       ? Math.max(...snapshot.docs.map(doc => Number(doc.id))) + 1 
       : 1;
     
-    // Use document with ID as string
-    await addDoc(collection(db, "saleItems"), {
+    // Create document with the calculated ID (as string)
+    const docRef = doc(db, "saleItems", nextId.toString());
+    await setDoc(docRef, {
       ...saleItem,
       id: nextId
     });
+    
+    console.log("Sale item created with ID:", nextId);
     
     return { id: nextId, ...saleItem };
   }
@@ -615,11 +627,14 @@ export class FirebaseStorage implements IStorage {
       notes: adjustment.notes || null
     };
     
-    // Use document with ID as string
-    await addDoc(collection(db, "inventoryAdjustments"), {
+    // Create document with the calculated ID (as string)
+    const docRef = doc(db, "inventoryAdjustments", nextId.toString());
+    await setDoc(docRef, {
       ...adjustmentData,
       id: nextId
     });
+    
+    console.log("Inventory adjustment created with ID:", nextId);
     
     return { 
       id: nextId, 
