@@ -1,14 +1,34 @@
 import React, { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent } from "@/components/ui/card";
+import { useQuery } from "@tanstack/react-query";
+import { apiRequest } from "../../lib/queryClient";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, ChevronLeft, XCircle } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "../../hooks/use-toast";
 import { format } from "date-fns";
+import { X, ChevronLeft, Plus } from "lucide-react";
 
 interface ProductDetailsProps {
   productId: string;
@@ -17,121 +37,160 @@ interface ProductDetailsProps {
 
 const ProductDetails: React.FC<ProductDetailsProps> = ({ productId, onClose }) => {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const [newSupplierName, setNewSupplierName] = useState("");
-  const [newSupplierPrice, setNewSupplierPrice] = useState("");
+  const [supplierName, setSupplierName] = useState("");
+  const [supplierPrice, setSupplierPrice] = useState("");
   const [showAddSupplier, setShowAddSupplier] = useState(false);
-
-  const { data: product, isLoading } = useQuery({
+  
+  // Fetch product details
+  const {
+    data: product,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ["/api/products", productId],
     queryFn: async () => {
-      const response = await apiRequest("GET", `/api/products/${productId}`);
+      const response = await apiRequest(`/api/products/${productId}`);
       return response;
     },
+    refetchOnWindowFocus: false,
   });
 
-  const { data: adjustments, isLoading: isLoadingAdjustments } = useQuery({
-    queryKey: ["/api/inventory-adjustments/product", productId],
+  // Fetch inventory adjustments
+  const {
+    data: adjustments = [],
+    isLoading: isLoadingAdjustments,
+  } = useQuery({
+    queryKey: ["/api/inventory-adjustments", "product", productId],
     queryFn: async () => {
-      const response = await apiRequest("GET", `/api/inventory-adjustments/product/${productId}`);
+      const response = await apiRequest(`/api/inventory-adjustments/product/${productId}`);
       return response;
     },
+    refetchOnWindowFocus: false,
   });
 
-  const updateProductMutation = useMutation({
-    mutationFn: (data: any) => apiRequest("PATCH", `/api/products/${productId}`, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/products", productId] });
-      toast({
-        title: "Product updated",
-        description: "The product has been successfully updated.",
-      });
-      setShowAddSupplier(false);
-      setNewSupplierName("");
-      setNewSupplierPrice("");
-    },
-    onError: (error) => {
-      toast({
-        title: "Failed to update product",
-        description: error.message || "Something went wrong.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handleAddSupplier = () => {
-    if (!newSupplierName.trim()) {
-      toast({
-        title: "Supplier name required",
-        description: "Please enter a supplier name.",
-        variant: "destructive",
-      });
+  const handleAddSupplier = async () => {
+    if (!supplierName.trim() || !supplierPrice.trim() || parseFloat(supplierPrice) <= 0) {
       return;
     }
 
-    if (!newSupplierPrice || isNaN(parseFloat(newSupplierPrice)) || parseFloat(newSupplierPrice) <= 0) {
-      toast({
-        title: "Valid price required",
-        description: "Please enter a valid price greater than zero.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Check if supplier already exists
-    const existingSupplierIndex = product.suppliers.findIndex(
-      (s) => s.name.toLowerCase() === newSupplierName.toLowerCase()
-    );
-
-    const today = new Date().toISOString();
-    const price = parseFloat(newSupplierPrice);
-
-    let updatedSuppliers = [...product.suppliers];
-
-    if (existingSupplierIndex >= 0) {
-      // Add new price to existing supplier
-      updatedSuppliers[existingSupplierIndex] = {
-        ...updatedSuppliers[existingSupplierIndex],
+    try {
+      // Get existing suppliers
+      const existingSuppliers = product.suppliers || [];
+      
+      // Check if supplier already exists
+      const supplierExists = existingSuppliers.some(s => 
+        s.name.toLowerCase() === supplierName.toLowerCase()
+      );
+      
+      if (supplierExists) {
+        toast({
+          title: "Supplier already exists",
+          description: "This supplier is already added to this product.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Create new supplier entry
+      const newSupplier = {
+        name: supplierName.trim(),
         priceHistory: [
-          ...updatedSuppliers[existingSupplierIndex].priceHistory,
-          { date: today, price }
-        ]
+          {
+            date: new Date().toISOString(),
+            price: parseFloat(supplierPrice),
+          },
+        ],
       };
-    } else {
-      // Add new supplier
-      updatedSuppliers.push({
-        name: newSupplierName,
-        priceHistory: [{ date: today, price }]
+      
+      // Update product with new supplier
+      await apiRequest(`/api/products/${productId}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          suppliers: [...existingSuppliers, newSupplier],
+        }),
+      });
+      
+      toast({
+        title: "Success",
+        description: "Supplier has been added to this product",
+      });
+      
+      setSupplierName("");
+      setSupplierPrice("");
+      setShowAddSupplier(false);
+      refetch();
+    } catch (error) {
+      console.error("Error adding supplier:", error);
+      toast({
+        title: "Error",
+        description: "Failed to add supplier. Please try again.",
+        variant: "destructive",
       });
     }
+  };
 
-    updateProductMutation.mutate({
-      suppliers: updatedSuppliers
-    });
+  const handleUpdatePrice = async (supplierIndex: number, newPrice: string) => {
+    try {
+      const priceValue = parseFloat(newPrice);
+      if (isNaN(priceValue) || priceValue <= 0) {
+        toast({
+          title: "Invalid price",
+          description: "Please enter a valid price.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Get existing suppliers
+      const existingSuppliers = [...product.suppliers];
+      const supplier = existingSuppliers[supplierIndex];
+      
+      // Add new price record
+      supplier.priceHistory.push({
+        date: new Date().toISOString(),
+        price: priceValue,
+      });
+      
+      // Update product with updated suppliers
+      await apiRequest(`/api/products/${productId}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          suppliers: existingSuppliers,
+        }),
+      });
+      
+      toast({
+        title: "Success",
+        description: "Price has been updated",
+      });
+      
+      refetch();
+    } catch (error) {
+      console.error("Error updating price:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update price. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   if (isLoading) {
     return (
       <Card>
-        <CardContent className="pt-6">
-          <div className="py-10 text-center">Loading product details...</div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!product) {
-    return (
-      <Card>
-        <CardContent className="pt-6">
-          <div className="py-10 text-center">
-            <p className="text-red-500">Product not found</p>
-            <Button onClick={onClose} variant="outline" className="mt-4">
-              <ChevronLeft className="mr-2 h-4 w-4" />
-              Back to List
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Button variant="ghost" size="sm" onClick={onClose}>
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Back
             </Button>
-          </div>
+            <Skeleton className="h-7 w-52 ml-2" />
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Skeleton className="h-6 w-full" />
+          <Skeleton className="h-6 w-full" />
+          <Skeleton className="h-6 w-full" />
         </CardContent>
       </Card>
     );
@@ -139,169 +198,215 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ productId, onClose }) =
 
   return (
     <Card>
-      <CardContent className="pt-6">
-        <div className="flex items-center mb-6">
-          <Button variant="ghost" onClick={onClose} className="p-2 mr-2">
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <h2 className="text-xl font-semibold">{product.name}</h2>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div>
-            <Label className="text-sm font-medium text-neutral-500">Product ID</Label>
-            <p className="text-neutral-800">{product.id}</p>
-          </div>
-          <div>
-            <Label className="text-sm font-medium text-neutral-500">Current Stock</Label>
-            <p className="text-neutral-800">{product.currentStock}</p>
-          </div>
-        </div>
-
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="font-semibold">Suppliers & Pricing</h3>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => setShowAddSupplier(!showAddSupplier)}
-              className="text-primary border-primary hover:bg-primary/10"
-            >
-              {showAddSupplier ? (
-                <>
-                  <XCircle className="mr-2 h-4 w-4" />
-                  Cancel
-                </>
-              ) : (
-                <>
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Add Supplier
-                </>
-              )}
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <Button variant="ghost" size="sm" onClick={onClose}>
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Back
             </Button>
+            <CardTitle className="ml-2">{product.name}</CardTitle>
           </div>
-
-          {showAddSupplier && (
-            <div className="p-4 bg-neutral-50 rounded-md mb-4 border border-neutral-200">
-              <h4 className="font-medium mb-3">Add New Supplier</h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <div className="col-span-2">
-                  <Label htmlFor="supplierName" className="mb-1 block">Supplier Name</Label>
+          <div className="text-sm text-muted-foreground">
+            ID: {product.id}
+          </div>
+        </div>
+        <CardDescription>
+          Current Stock: {product.currentStock} units
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Tabs defaultValue="suppliers">
+          <TabsList className="mb-4">
+            <TabsTrigger value="suppliers">Suppliers & Prices</TabsTrigger>
+            <TabsTrigger value="history">Inventory History</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="suppliers" className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-medium">Product Suppliers</h3>
+              {!showAddSupplier && (
+                <Button 
+                  size="sm" 
+                  onClick={() => setShowAddSupplier(true)}
+                  className="flex items-center gap-1"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Supplier
+                </Button>
+              )}
+            </div>
+            
+            {showAddSupplier && (
+              <div className="p-4 border rounded-md space-y-3">
+                <div>
+                  <Label htmlFor="supplierName">Supplier Name</Label>
                   <Input
                     id="supplierName"
+                    value={supplierName}
+                    onChange={(e) => setSupplierName(e.target.value)}
                     placeholder="Enter supplier name"
-                    value={newSupplierName}
-                    onChange={(e) => setNewSupplierName(e.target.value)}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="supplierPrice" className="mb-1 block">Price</Label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <span className="text-neutral-800 sm:text-sm">$</span>
-                    </div>
-                    <Input
-                      id="supplierPrice"
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      placeholder="0.00"
-                      className="pl-7"
-                      value={newSupplierPrice}
-                      onChange={(e) => setNewSupplierPrice(e.target.value)}
-                    />
-                  </div>
+                  <Label htmlFor="supplierPrice">Price</Label>
+                  <Input
+                    id="supplierPrice"
+                    type="number"
+                    step="0.01"
+                    value={supplierPrice}
+                    onChange={(e) => setSupplierPrice(e.target.value)}
+                    placeholder="Enter price"
+                  />
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => {
+                      setShowAddSupplier(false);
+                      setSupplierName("");
+                      setSupplierPrice("");
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button size="sm" onClick={handleAddSupplier}>
+                    Add Supplier
+                  </Button>
                 </div>
               </div>
-              <div className="flex justify-end">
-                <Button
-                  type="button"
-                  onClick={handleAddSupplier}
-                  disabled={updateProductMutation.isPending}
-                  className="bg-primary hover:bg-primary/90"
-                >
-                  {updateProductMutation.isPending ? "Adding..." : "Add Supplier"}
-                </Button>
+            )}
+            
+            {product.suppliers.length === 0 ? (
+              <div className="text-center py-8 border rounded-md">
+                <p className="text-muted-foreground">No suppliers added yet</p>
+                {!showAddSupplier && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-2"
+                    onClick={() => setShowAddSupplier(true)}
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Your First Supplier
+                  </Button>
+                )}
               </div>
-            </div>
-          )}
-
-          {product.suppliers.length === 0 ? (
-            <div className="py-4 text-center border border-dashed border-neutral-200 rounded-md">
-              <p className="text-neutral-500 mb-2">No suppliers added yet</p>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => setShowAddSupplier(true)}
-                className="text-primary hover:bg-primary/10"
-              >
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Add Your First Supplier
-              </Button>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Supplier</TableHead>
-                    <TableHead>Latest Price</TableHead>
-                    <TableHead>Price History</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {product.suppliers.map((supplier, index) => {
-                    const latestPrice = supplier.priceHistory.length > 0
-                      ? supplier.priceHistory[supplier.priceHistory.length - 1]
-                      : null;
+            ) : (
+              <div className="space-y-4">
+                {product.suppliers.map((supplier, index) => {
+                  const currentPrice = supplier.priceHistory[supplier.priceHistory.length - 1].price;
+                  // Each supplier needs its own state
+                  const key = `${supplier.name}-${index}`;
+                  // These states are managed at the component level
+                  const [priceInputs, setPriceInputs] = useState<{[key: string]: string}>({});
+                  const [showUpdatePrices, setShowUpdatePrices] = useState<{[key: string]: boolean}>({});
+                  
+                  const priceInput = priceInputs[key] || "";
+                  const showUpdatePrice = showUpdatePrices[key] || false;
+                  
+                  const setPriceInput = (value: string) => {
+                    setPriceInputs({...priceInputs, [key]: value});
+                  };
+                  
+                  const setShowUpdatePrice = (value: boolean) => {
+                    setShowUpdatePrices({...showUpdatePrices, [key]: value});
+                  };
+                  
+                  return (
+                    <div key={index} className="border rounded-md p-4">
+                      <div className="flex justify-between items-center">
+                        <h4 className="font-medium">{supplier.name}</h4>
+                        <div className="text-sm">
+                          Current Price: ${currentPrice.toFixed(2)}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="ml-2"
+                            onClick={() => setShowUpdatePrice(!showUpdatePrice)}
+                          >
+                            Update
+                          </Button>
+                        </div>
+                      </div>
                       
-                    return (
-                      <TableRow key={index}>
-                        <TableCell className="font-medium">{supplier.name}</TableCell>
-                        <TableCell>
-                          {latestPrice ? (
-                            <span className="font-semibold">${latestPrice.price.toFixed(2)}</span>
-                          ) : (
-                            <span className="text-neutral-400">No price</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="max-h-20 overflow-y-auto text-sm">
-                            {supplier.priceHistory.map((priceRecord, idx) => (
-                              <div key={idx} className="mb-1 last:mb-0">
-                                <span className="text-neutral-500">
-                                  {format(new Date(priceRecord.date), 'MMM d, yyyy')}:
-                                </span>{" "}
-                                <span className="font-medium">${priceRecord.price.toFixed(2)}</span>
+                      {showUpdatePrice && (
+                        <div className="mt-2 flex items-end gap-2">
+                          <div className="flex-1">
+                            <Label htmlFor={`new-price-${index}`}>New Price</Label>
+                            <Input
+                              id={`new-price-${index}`}
+                              type="number"
+                              step="0.01"
+                              placeholder="Enter new price"
+                              value={priceInput}
+                              onChange={(e) => setPriceInput(e.target.value)}
+                            />
+                          </div>
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              handleUpdatePrice(index, priceInput);
+                              setShowUpdatePrice(false);
+                              setPriceInput("");
+                            }}
+                          >
+                            Save
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setShowUpdatePrice(false);
+                              setPriceInput("");
+                            }}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                      
+                      {supplier.priceHistory.length > 1 && (
+                        <div className="mt-4">
+                          <h5 className="text-sm font-medium mb-2">Price History</h5>
+                          <div className="text-sm space-y-1 max-h-32 overflow-y-auto">
+                            {supplier.priceHistory.slice().reverse().map((priceRecord, idx) => (
+                              <div key={idx} className="flex justify-between text-muted-foreground">
+                                <span>{format(new Date(priceRecord.date), "MMM d, yyyy")}</span>
+                                <span>${priceRecord.price.toFixed(2)}</span>
                               </div>
                             ))}
                           </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </div>
-
-        <div>
-          <h3 className="font-semibold mb-4">Inventory History</h3>
-          {isLoadingAdjustments ? (
-            <div className="py-4 text-center">Loading inventory history...</div>
-          ) : !adjustments || adjustments.length === 0 ? (
-            <div className="py-4 text-center border border-dashed border-neutral-200 rounded-md">
-              <p className="text-neutral-500">No inventory adjustments found</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="history">
+            <h3 className="text-lg font-medium mb-4">Inventory Adjustments</h3>
+            
+            {isLoadingAdjustments ? (
+              <div className="space-y-2">
+                <Skeleton className="h-6 w-full" />
+                <Skeleton className="h-6 w-full" />
+                <Skeleton className="h-6 w-full" />
+              </div>
+            ) : adjustments.length === 0 ? (
+              <div className="text-center py-8 border rounded-md">
+                <p className="text-muted-foreground">No inventory adjustments recorded</p>
+              </div>
+            ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Date</TableHead>
                     <TableHead>Type</TableHead>
-                    <TableHead>Quantity</TableHead>
+                    <TableHead className="text-right">Quantity</TableHead>
                     <TableHead>Reason</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -309,20 +414,14 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ productId, onClose }) =
                   {adjustments.map((adjustment) => (
                     <TableRow key={adjustment.id}>
                       <TableCell>
-                        {format(new Date(adjustment.adjustmentDate), 'MMM d, yyyy')}
+                        {format(new Date(adjustment.adjustmentDate), "MMM d, yyyy")}
                       </TableCell>
                       <TableCell>
-                        <span
-                          className={`inline-block px-2 py-1 rounded-full text-xs ${
-                            adjustment.adjustmentType === "Incoming"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                        >
+                        <span className={adjustment.adjustmentType === "Incoming" ? "text-green-600" : "text-red-600"}>
                           {adjustment.adjustmentType}
                         </span>
                       </TableCell>
-                      <TableCell className="font-medium">
+                      <TableCell className="text-right font-medium">
                         {adjustment.quantity}
                       </TableCell>
                       <TableCell>{adjustment.reason}</TableCell>
@@ -330,9 +429,9 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ productId, onClose }) =
                   ))}
                 </TableBody>
               </Table>
-            </div>
-          )}
-        </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   );

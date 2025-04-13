@@ -1,48 +1,51 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import SupplierList from "../components/supplier/SupplierList";
 import SupplierForm from "../components/supplier/SupplierForm";
+import { Plus } from "lucide-react";
 
 export default function Suppliers() {
-  const [activeTab, setActiveTab] = useState("list");
-
-  const { data: suppliers, isLoading } = useQuery({
+  const [showForm, setShowForm] = useState(false);
+  
+  // Fetch suppliers
+  const {
+    data: suppliers = [],
+    isLoading,
+    refetch
+  } = useQuery({
     queryKey: ["/api/suppliers"],
+    refetchOnWindowFocus: false
   });
 
-  const handleAddNewClick = () => {
-    setActiveTab("add");
+  const handleAddNew = () => {
+    setShowForm(true);
   };
 
-  const handleSupplierCreated = () => {
-    setActiveTab("list");
+  const handleFormComplete = () => {
+    setShowForm(false);
+    refetch();
   };
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-neutral-800">Suppliers</h1>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-3xl font-bold">Suppliers</h2>
+        <Button onClick={handleAddNew} className="flex items-center gap-1">
+          <Plus className="h-4 w-4" />
+          Add New Supplier
+        </Button>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="mb-4">
-          <TabsTrigger value="list">Supplier List</TabsTrigger>
-          <TabsTrigger value="add">Add Supplier</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="list" className="py-4">
-          <SupplierList 
-            suppliers={suppliers || []} 
-            isLoading={isLoading} 
-            onAddNewClick={handleAddNewClick}
-          />
-        </TabsContent>
-
-        <TabsContent value="add" className="py-4">
-          <SupplierForm onComplete={handleSupplierCreated} />
-        </TabsContent>
-      </Tabs>
+      {showForm ? (
+        <SupplierForm onComplete={handleFormComplete} />
+      ) : (
+        <SupplierList 
+          suppliers={suppliers} 
+          isLoading={isLoading} 
+          onAddNewClick={handleAddNew}
+        />
+      )}
     </div>
   );
 }

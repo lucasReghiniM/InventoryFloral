@@ -1,123 +1,217 @@
-import React from "react";
-import { useForm } from "react-hook-form";
+import React, { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { v4 as uuidv4 } from 'uuid';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { insertProductSchema } from "@shared/schema";
+import { apiRequest, queryClient } from "../../lib/queryClient";
+import { z } from "zod";
+import { useToast } from "../../hooks/use-toast";
+import { v4 as uuidv4 } from "uuid";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { X, Plus } from "lucide-react";
 
 interface ProductFormProps {
   onComplete?: () => void;
 }
 
-const productFormSchema = z.object({
-  name: z.string().min(1, { message: "Product name is required" }),
-  currentStock: z.number().min(0, { message: "Current stock must be a positive number" }),
+const validationSchema = insertProductSchema.extend({
+  name: z.string().min(1, "Product name is required"),
+  currentStock: z.number().min(0, "Stock must be 0 or greater"),
 });
+
+type FormValues = z.infer<typeof validationSchema>;
 
 const ProductForm: React.FC<ProductFormProps> = ({ onComplete }) => {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const [suppliers, setSuppliers] = useState<Array<{ name: string; price: number }>>([]);
+  const [supplierName, setSupplierName] = useState("");
+  const [supplierPrice, setSupplierPrice] = useState("");
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<z.infer<typeof productFormSchema>>({
-    resolver: zodResolver(productFormSchema),
+  const form = useForm<FormValues>({
+    resolver: zodResolver(validationSchema),
     defaultValues: {
       name: "",
       currentStock: 0,
+      suppliers: [],
     },
   });
 
-  const createProductMutation = useMutation({
-    mutationFn: (data: any) => apiRequest("POST", "/api/products", data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
-      
-      toast({
-        title: "Product created",
-        description: "The product has been successfully created.",
+  const addSupplier = () => {
+    if (supplierName.trim() && parseFloat(supplierPrice) > 0) {
+      setSuppliers([
+        ...suppliers,
+        { name: supplierName.trim(), price: parseFloat(supplierPrice) },
+      ]);
+      setSupplierName("");
+      setSupplierPrice("");
+    }
+  };
+
+  const removeSupplier = (index: number) => {
+    setSuppliers(suppliers.filter((_, i) => i !== index));
+  };
+
+  const onSubmit = async (data: FormValues) => {
+    try {
+      // Transform suppliers to the format required by the API
+      const formattedSuppliers = suppliers.map((s) => ({
+        name: s.name,
+        priceHistory: [
+          {
+            date: new Date().toISOString(),
+            price: s.price,
+          },
+        ],
+      }));
+
+      const productData = {
+        ...data,
+        id: uuidv4(), // Generate UUID for product
+        suppliers: formattedSuppliers,
+      };
+
+      await apiRequest("/api/products", {
+        method: "POST",
+        body: JSON.stringify(productData),
       });
-      
-      reset();
-      
-      // Call onComplete if provided
-      if (onComplete) {
-        onComplete();
-      }
-    },
-    onError: (error) => {
+
+      // Invalidate the products query to refetch
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+
       toast({
-        title: "Failed to create product",
-        description: error.message || "Something went wrong.",
+        title: "Success",
+        description: "Product has been created successfully",
+      });
+
+      onComplete?.();
+    } catch (error) {
+      console.error("Error creating product:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create product. Please try again.",
         variant: "destructive",
       });
-    },
-  });
-
-  const onSubmit = (data: z.infer<typeof productFormSchema>) => {
-    // Generate a UUID for the new product
-    const newProductId = uuidv4();
-    
-    // Prepare product data
-    const productData = {
-      id: newProductId,
-      name: data.name,
-      currentStock: data.currentStock,
-      suppliers: [],
-    };
-
-    createProductMutation.mutate(productData);
+    }
   };
 
   return (
     <Card>
-      <CardContent className="pt-6">
-        <h2 className="text-xl font-semibold mb-6">New Product</h2>
-        
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div>
-              <Label htmlFor="name" className="mb-1">Product Name</Label>
-              <Input
-                id="name"
-                placeholder="Roses"
-                {...register("name")}
-                className={errors.name ? "border-red-500" : ""}
-              />
-              {errors.name && (
-                <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
+      <CardHeader>
+        <CardTitle>Add New Product</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Product Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter product name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
-            </div>
-            
-            <div>
-              <Label htmlFor="currentStock" className="mb-1">Initial Stock</Label>
-              <Input
-                id="currentStock"
-                type="number"
-                min="0"
-                {...register("currentStock", { valueAsNumber: true })}
-                className={errors.currentStock ? "border-red-500" : ""}
-              />
-              {errors.currentStock && (
-                <p className="text-red-500 text-sm mt-1">{errors.currentStock.message}</p>
-              )}
-            </div>
-          </div>
+            />
 
-          <div className="flex justify-end">
-            <Button
-              type="submit"
-              className="bg-primary hover:bg-primary/90"
-              disabled={createProductMutation.isPending}
-            >
-              {createProductMutation.isPending ? "Saving..." : "Save Product"}
-            </Button>
-          </div>
-        </form>
+            <FormField
+              control={form.control}
+              name="currentStock"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Initial Stock</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="0"
+                      {...field}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="space-y-4">
+              <div>
+                <FormLabel>Product Suppliers</FormLabel>
+                <div className="mt-2 space-y-4">
+                  {suppliers.map((supplier, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-3 border rounded-md"
+                    >
+                      <div>
+                        <span className="font-medium">{supplier.name}</span>
+                        <span className="ml-2 text-sm text-muted-foreground">
+                          ${supplier.price.toFixed(2)}
+                        </span>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeSupplier(index)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <Input
+                    placeholder="Supplier name"
+                    value={supplierName}
+                    onChange={(e) => setSupplierName(e.target.value)}
+                  />
+                </div>
+                <div className="w-24">
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="Price"
+                    value={supplierPrice}
+                    onChange={(e) => setSupplierPrice(e.target.value)}
+                  />
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={addSupplier}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onComplete?.()}
+              >
+                Cancel
+              </Button>
+              <Button type="submit">Create Product</Button>
+            </div>
+          </form>
+        </Form>
       </CardContent>
     </Card>
   );

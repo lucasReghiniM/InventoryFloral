@@ -1,103 +1,108 @@
 import React from "react";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { v4 as uuidv4 } from 'uuid';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { insertSupplierSchema } from "@shared/schema";
+import { apiRequest, queryClient } from "../../lib/queryClient";
+import { z } from "zod";
+import { useToast } from "../../hooks/use-toast";
+import { v4 as uuidv4 } from "uuid";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 
 interface SupplierFormProps {
   onComplete?: () => void;
 }
 
-const supplierFormSchema = z.object({
-  name: z.string().min(1, { message: "Supplier name is required" }),
+const validationSchema = insertSupplierSchema.extend({
+  name: z.string().min(1, "Supplier name is required"),
 });
+
+type FormValues = z.infer<typeof validationSchema>;
 
 const SupplierForm: React.FC<SupplierFormProps> = ({ onComplete }) => {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<z.infer<typeof supplierFormSchema>>({
-    resolver: zodResolver(supplierFormSchema),
+  const form = useForm<FormValues>({
+    resolver: zodResolver(validationSchema),
     defaultValues: {
       name: "",
     },
   });
 
-  const createSupplierMutation = useMutation({
-    mutationFn: (data: any) => apiRequest("POST", "/api/suppliers", data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/suppliers"] });
-      
-      toast({
-        title: "Supplier created",
-        description: "The supplier has been successfully added.",
+  const onSubmit = async (data: FormValues) => {
+    try {
+      const supplierData = {
+        ...data,
+        id: uuidv4(), // Generate UUID for supplier
+      };
+
+      await apiRequest("/api/suppliers", {
+        method: "POST",
+        body: JSON.stringify(supplierData),
       });
-      
-      reset();
-      
-      // Call onComplete if provided
-      if (onComplete) {
-        onComplete();
-      }
-    },
-    onError: (error) => {
+
+      // Invalidate the suppliers query to refetch
+      queryClient.invalidateQueries({ queryKey: ["/api/suppliers"] });
+
       toast({
-        title: "Failed to create supplier",
-        description: error.message || "Something went wrong.",
+        title: "Success",
+        description: "Supplier has been created successfully",
+      });
+
+      onComplete?.();
+    } catch (error) {
+      console.error("Error creating supplier:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create supplier. Please try again.",
         variant: "destructive",
       });
-    },
-  });
-
-  const onSubmit = (data: z.infer<typeof supplierFormSchema>) => {
-    // Generate a UUID for the new supplier
-    const newSupplierId = uuidv4();
-    
-    // Prepare supplier data
-    const supplierData = {
-      id: newSupplierId,
-      name: data.name,
-    };
-
-    createSupplierMutation.mutate(supplierData);
+    }
   };
 
   return (
     <Card>
-      <CardContent className="pt-6">
-        <h2 className="text-xl font-semibold mb-6">New Supplier</h2>
-        
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="mb-6">
-            <Label htmlFor="name" className="mb-1">Supplier Name</Label>
-            <Input
-              id="name"
-              placeholder="Flower Wholesaler Inc."
-              {...register("name")}
-              className={errors.name ? "border-red-500" : ""}
+      <CardHeader>
+        <CardTitle>Add New Supplier</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Supplier Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter supplier name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            {errors.name && (
-              <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
-            )}
-          </div>
 
-          <div className="flex justify-end">
-            <Button
-              type="submit"
-              className="bg-primary hover:bg-primary/90"
-              disabled={createSupplierMutation.isPending}
-            >
-              {createSupplierMutation.isPending ? "Saving..." : "Save Supplier"}
-            </Button>
-          </div>
-        </form>
+            <div className="flex justify-end space-x-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onComplete?.()}
+              >
+                Cancel
+              </Button>
+              <Button type="submit">Create Supplier</Button>
+            </div>
+          </form>
+        </Form>
       </CardContent>
     </Card>
   );
