@@ -86,7 +86,7 @@ const PurchaseForm: React.FC<PurchaseFormProps> = ({ onComplete }) => {
   const deliveryCost = watch("deliveryCost");
 
   const createPurchaseMutation = useMutation({
-    mutationFn: (data: any) => apiRequest("POST", "/api/purchases", data as any),
+    mutationFn: (data: any) => apiRequest("POST", "/api/purchases", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/purchases"] });
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
