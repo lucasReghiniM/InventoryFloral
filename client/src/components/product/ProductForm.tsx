@@ -120,9 +120,15 @@ const ProductForm: React.FC<ProductFormProps> = ({ onComplete }) => {
           }))
         : [];
 
+      console.log("Formatted supplier data:", formattedSuppliers);
+      
+      // Generate a UUID for the product
+      const productId = uuidv4(); 
+      console.log("Generated product ID:", productId);
+      
       const productData = {
         ...data,
-        id: uuidv4(), // Generate UUID for product
+        id: productId,
         currentStock: 0, // Default to 0 stock for new products
         suppliers: formattedSuppliers,
       };

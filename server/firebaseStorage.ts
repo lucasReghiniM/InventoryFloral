@@ -42,52 +42,154 @@ const convertTimestampToString = (timestamp: any): string => {
 export class FirebaseStorage implements IStorage {
   // Product methods
   async getProducts(): Promise<Product[]> {
-    const productsRef = collection(db, "products");
-    const snapshot = await getDocs(productsRef);
-    return snapshot.docs.map(doc => ({ id: Number(doc.id), ...doc.data() as Omit<Product, 'id'> }));
+    try {
+      const productsRef = collection(db, "products");
+      const snapshot = await getDocs(productsRef);
+      
+      return snapshot.docs.map(doc => {
+        const data = doc.data();
+        // Use the document ID as the product ID
+        return { 
+          id: doc.id, 
+          name: data.name,
+          currentStock: data.currentStock || 0,
+          suppliers: data.suppliers || []
+        };
+      });
+    } catch (error) {
+      console.error("Error getting products:", error);
+      return [];
+    }
   }
 
-  async getProduct(id: number): Promise<Product | undefined> {
-    const productRef = doc(db, "products", id.toString());
-    const productSnap = await getDoc(productRef);
-    if (!productSnap.exists()) return undefined;
-    return { id, ...productSnap.data() as Omit<Product, 'id'> };
+  async getProduct(id: string): Promise<Product | undefined> {
+    // Log the received ID for debugging
+    console.log("Firebase Storage - getProduct called with ID:", id, "Type:", typeof id);
+    
+    try {
+      const idToUse = id.toString();
+      console.log("Using ID for Firebase query:", idToUse);
+      
+      // First try direct lookup, assuming 'id' might be a document ID in Firestore
+      const productRef = doc(db, "products", idToUse);
+      const productSnap = await getDoc(productRef);
+      
+      // If direct lookup succeeds, return the data
+      if (productSnap.exists()) {
+        console.log("Product found by direct ID lookup");
+        return { 
+          id: idToUse, 
+          ...productSnap.data() as Omit<Product, 'id'> 
+        };
+      }
+      
+      // If direct lookup fails, try to find by the 'id' field inside the documents
+      console.log("Direct lookup failed, attempting to find by id field");
+      const productsRef = collection(db, "products");
+      const q = query(productsRef, where("id", "==", id));
+      const querySnapshot = await getDocs(q);
+      
+      // Check if any matching document was found
+      if (!querySnapshot.empty) {
+        const docData = querySnapshot.docs[0].data() as Omit<Product, 'id'>;
+        console.log("Product found by id field query:", docData);
+        return { 
+          id: id, 
+          ...docData 
+        };
+      }
+      
+      console.log("Product not found by any method");
+      return undefined;
+    } catch (error) {
+      console.error("Error in getProduct:", error);
+      return undefined;
+    }
   }
 
   async createProduct(product: InsertProduct): Promise<Product> {
-    // Get next ID
-    const productsRef = collection(db, "products");
-    const snapshot = await getDocs(productsRef);
-    const nextId = snapshot.docs.length > 0 
-      ? Math.max(...snapshot.docs.map(doc => Number(doc.id))) + 1 
-      : 1;
+    console.log("Creating product with data:", product);
+    
+    // Use the provided ID or generate a new UUID
+    const productId = product.id || uuidv4();
+    console.log("Using product ID:", productId);
     
     const newProduct = {
       ...product,
-      currentStock: product.currentStock || 0
+      id: productId,
+      currentStock: product.currentStock || 0,
+      suppliers: product.suppliers || []
     };
 
-    // Use document with ID as string
-    await addDoc(collection(db, "products"), {
-      ...newProduct,
-      id: nextId
-    });
-    
-    return { id: nextId, ...newProduct };
+    console.log("Prepared product data:", newProduct);
+
+    try {
+      // Create document with provided ID
+      const docRef = doc(db, "products", productId);
+      await setDoc(docRef, newProduct);
+      
+      console.log("Product created successfully!");
+      return newProduct as Product;
+    } catch (error) {
+      console.error("Error creating product:", error);
+      throw error;
+    }
   }
 
-  async updateProduct(id: number, product: Partial<InsertProduct>): Promise<Product | undefined> {
-    const productRef = doc(db, "products", id.toString());
-    const productSnap = await getDoc(productRef);
+  async updateProduct(id: string, product: Partial<InsertProduct>): Promise<Product | undefined> {
+    console.log("updateProduct called with ID:", id, "Type:", typeof id);
+    console.log("Update data:", product);
     
-    if (!productSnap.exists()) return undefined;
-    
-    const existingProduct = { id, ...productSnap.data() as Omit<Product, 'id'> };
-    const updatedProduct = { ...existingProduct, ...product };
-    
-    await updateDoc(productRef, product);
-    
-    return updatedProduct;
+    try {
+      // Try to find the product by internal ID field first
+      const idToUse = id.toString();
+      const productsRef = collection(db, "products");
+      const q = query(productsRef, where("id", "==", idToUse));
+      const querySnapshot = await getDocs(q);
+      
+      if (!querySnapshot.empty) {
+        // Found by internal ID field
+        const docRef = querySnapshot.docs[0].ref;
+        const docData = querySnapshot.docs[0].data() as Omit<Product, 'id'>;
+        
+        console.log("Found product by id field query:", docData);
+        
+        // Update the document
+        await updateDoc(docRef, product);
+        
+        // Return updated product
+        return { 
+          id: idToUse, 
+          ...docData,
+          ...product 
+        };
+      }
+      
+      // If not found by internal ID, try direct document ID lookup
+      const productRef = doc(db, "products", idToUse);
+      const productSnap = await getDoc(productRef);
+      
+      if (productSnap.exists()) {
+        const docData = productSnap.data() as Omit<Product, 'id'>;
+        console.log("Found product by direct lookup:", docData);
+        
+        // Update the document
+        await updateDoc(productRef, product);
+        
+        // Return updated product
+        return { 
+          id: idToUse, 
+          ...docData,
+          ...product 
+        };
+      }
+      
+      console.log("Product not found for update by any method");
+      return undefined;
+    } catch (error) {
+      console.error("Error in updateProduct:", error);
+      return undefined;
+    }
   }
 
   async updateProductStock(id: number, quantity: number): Promise<Product | undefined> {

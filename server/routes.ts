@@ -60,14 +60,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const id = req.params.id;
       const productData = req.body;
       
+      console.log("PATCH /api/products/:id - Updating product with ID:", id);
+      console.log("Update data:", productData);
+      
       const updatedProduct = await storage.updateProduct(id, productData);
       
       if (!updatedProduct) {
+        console.log("Product not found for update");
         return res.status(404).json({ message: "Product not found" });
       }
       
+      console.log("Product updated successfully:", updatedProduct);
       res.json(updatedProduct);
     } catch (error) {
+      console.error("Error updating product:", error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid product data", errors: error.errors });
       }

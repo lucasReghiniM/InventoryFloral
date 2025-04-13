@@ -52,7 +52,10 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ productId, onClose }) =
     queryKey: ["/api/products", productId],
     queryFn: async () => {
       try {
+        console.log("Fetching product with ID:", productId);
+        // Try to fetch by string ID
         const response = await apiRequest(`/api/products/${productId}`);
+        console.log("Product response:", response);
         return response;
       } catch (error) {
         console.error("Error fetching product:", error);
