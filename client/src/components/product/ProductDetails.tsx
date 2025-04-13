@@ -41,6 +41,10 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ productId, onClose }) =
   const [supplierPrice, setSupplierPrice] = useState("");
   const [showAddSupplier, setShowAddSupplier] = useState(false);
   
+  // States for supplier price updates - moved outside the map function
+  const [priceInputs, setPriceInputs] = useState<{[key: string]: string}>({});
+  const [showUpdatePrices, setShowUpdatePrices] = useState<{[key: string]: boolean}>({}); 
+  
   // Fetch product details
   const {
     data: product,
@@ -338,19 +342,16 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ productId, onClose }) =
                   const currentPrice = supplier.priceHistory[supplier.priceHistory.length - 1].price;
                   // Each supplier needs its own state
                   const key = `${supplier.name}-${index}`;
-                  // These states are managed at the component level
-                  const [priceInputs, setPriceInputs] = useState<{[key: string]: string}>({});
-                  const [showUpdatePrices, setShowUpdatePrices] = useState<{[key: string]: boolean}>({});
                   
                   const priceInput = priceInputs[key] || "";
                   const showUpdatePrice = showUpdatePrices[key] || false;
                   
                   const setPriceInput = (value: string) => {
-                    setPriceInputs({...priceInputs, [key]: value});
+                    setPriceInputs(prev => ({...prev, [key]: value}));
                   };
                   
                   const setShowUpdatePrice = (value: boolean) => {
-                    setShowUpdatePrices({...showUpdatePrices, [key]: value});
+                    setShowUpdatePrices(prev => ({...prev, [key]: value}));
                   };
                   
                   return (
