@@ -10,8 +10,14 @@ import {
   insertInventoryAdjustmentSchema
 } from "@shared/schema";
 import { z } from "zod";
+import path from "path";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Rota para a página de demonstração
+  app.get('/demo', (req, res) => {
+    res.sendFile(path.resolve('./client/demo.html'));
+  });
+
   // API routes with /api prefix
 
   // Product routes
