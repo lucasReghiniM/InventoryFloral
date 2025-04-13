@@ -16,6 +16,8 @@ import {
 // Export types for use in firebaseStorage
 export type Product = ProductType;
 export type InsertProduct = InsertProductType;
+export type Supplier = SupplierType;
+export type InsertSupplier = InsertSupplierType;
 export type Purchase = PurchaseType;
 export type InsertPurchase = InsertPurchaseType;
 export type PurchaseItem = PurchaseItemType;
@@ -32,10 +34,17 @@ export type InsertInventoryAdjustment = InsertInventoryAdjustmentType;
 export interface IStorage {
   // Product methods
   getProducts(): Promise<Product[]>;
-  getProduct(id: number): Promise<Product | undefined>;
+  getProduct(id: string): Promise<Product | undefined>;
   createProduct(product: InsertProduct): Promise<Product>;
-  updateProduct(id: number, product: Partial<InsertProduct>): Promise<Product | undefined>;
-  updateProductStock(id: number, quantity: number): Promise<Product | undefined>;
+  updateProduct(id: string, product: Partial<InsertProduct>): Promise<Product | undefined>;
+  updateProductStock(id: string, quantity: number): Promise<Product | undefined>;
+  deleteProduct(id: string): Promise<boolean>;
+  
+  // Supplier methods
+  getSuppliers(): Promise<Supplier[]>;
+  getSupplier(id: string): Promise<Supplier | undefined>;
+  createSupplier(supplier: InsertSupplier): Promise<Supplier>;
+  deleteSupplier(id: string): Promise<boolean>;
   
   // Purchase methods
   getPurchases(): Promise<Purchase[]>;
@@ -59,18 +68,18 @@ export interface IStorage {
   
   // Inventory adjustment methods
   getInventoryAdjustments(): Promise<InventoryAdjustment[]>;
-  getInventoryAdjustmentsForProduct(productId: number): Promise<InventoryAdjustment[]>;
+  getInventoryAdjustmentsForProduct(productId: string): Promise<InventoryAdjustment[]>;
   createInventoryAdjustment(adjustment: InsertInventoryAdjustment): Promise<InventoryAdjustment>;
 }
 
 export class MemStorage implements IStorage {
-  private productsMap: Map<number, Product>;
+  private productsMap: Map<string, Product>;
+  private suppliersMap: Map<string, Supplier>;
   private purchasesMap: Map<number, Purchase>;
   private purchaseItemsMap: Map<number, PurchaseItem>;
   private salesMap: Map<number, Sale>;
   private saleItemsMap: Map<number, SaleItem>;
   private inventoryAdjustmentsMap: Map<number, InventoryAdjustment>;
-  private currentProductId: number;
   private currentPurchaseId: number;
   private currentPurchaseItemId: number;
   private currentSaleId: number;
@@ -81,12 +90,12 @@ export class MemStorage implements IStorage {
 
   constructor() {
     this.productsMap = new Map();
+    this.suppliersMap = new Map();
     this.purchasesMap = new Map();
     this.purchaseItemsMap = new Map();
     this.salesMap = new Map();
     this.saleItemsMap = new Map();
     this.inventoryAdjustmentsMap = new Map();
-    this.currentProductId = 1;
     this.currentPurchaseId = 1;
     this.currentPurchaseItemId = 1;
     this.currentSaleId = 1;
@@ -99,18 +108,22 @@ export class MemStorage implements IStorage {
     return Array.from(this.productsMap.values());
   }
 
-  async getProduct(id: number): Promise<Product | undefined> {
+  async getProduct(id: string): Promise<Product | undefined> {
     return this.productsMap.get(id);
   }
 
   async createProduct(product: InsertProduct): Promise<Product> {
-    const id = this.currentProductId++;
-    const newProduct: Product = { id, ...product };
-    this.productsMap.set(id, newProduct);
+    const newProduct: Product = {
+      id: product.id,
+      name: product.name,
+      currentStock: product.currentStock,
+      suppliers: product.suppliers || []
+    };
+    this.productsMap.set(newProduct.id, newProduct);
     return newProduct;
   }
 
-  async updateProduct(id: number, product: Partial<InsertProduct>): Promise<Product | undefined> {
+  async updateProduct(id: string, product: Partial<InsertProduct>): Promise<Product | undefined> {
     const existingProduct = this.productsMap.get(id);
     if (!existingProduct) return undefined;
 
@@ -119,7 +132,7 @@ export class MemStorage implements IStorage {
     return updatedProduct;
   }
 
-  async updateProductStock(id: number, quantity: number): Promise<Product | undefined> {
+  async updateProductStock(id: string, quantity: number): Promise<Product | undefined> {
     const product = this.productsMap.get(id);
     if (!product) return undefined;
 
@@ -129,6 +142,32 @@ export class MemStorage implements IStorage {
     };
     this.productsMap.set(id, updatedProduct);
     return updatedProduct;
+  }
+
+  async deleteProduct(id: string): Promise<boolean> {
+    return this.productsMap.delete(id);
+  }
+
+  // Supplier methods
+  async getSuppliers(): Promise<Supplier[]> {
+    return Array.from(this.suppliersMap.values());
+  }
+
+  async getSupplier(id: string): Promise<Supplier | undefined> {
+    return this.suppliersMap.get(id);
+  }
+
+  async createSupplier(supplier: InsertSupplier): Promise<Supplier> {
+    const newSupplier: Supplier = {
+      id: supplier.id,
+      name: supplier.name
+    };
+    this.suppliersMap.set(newSupplier.id, newSupplier);
+    return newSupplier;
+  }
+
+  async deleteSupplier(id: string): Promise<boolean> {
+    return this.suppliersMap.delete(id);
   }
 
   // Purchase methods

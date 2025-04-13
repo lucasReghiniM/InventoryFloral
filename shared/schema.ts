@@ -1,20 +1,49 @@
 import { z } from "zod";
 
-// Product schemas
-export const insertProductSchema = z.object({
+// Price history schema
+export const priceHistorySchema = z.object({
+  date: z.string().min(1), // ISO string date
+  price: z.number().min(0),
+});
+
+export type PriceHistory = z.infer<typeof priceHistorySchema>;
+
+// Supplier schema for individual product suppliers
+export const productSupplierSchema = z.object({
   name: z.string().min(1),
-  unitPrice: z.number().min(0),
+  priceHistory: z.array(priceHistorySchema).default([]),
+});
+
+export type ProductSupplier = z.infer<typeof productSupplierSchema>;
+
+// Updated Product schemas
+export const insertProductSchema = z.object({
+  id: z.string().uuid().optional(), // UUID will be generated if not provided
+  name: z.string().min(1),
   currentStock: z.number().int().default(0),
+  suppliers: z.array(productSupplierSchema).default([]),
 });
 
 export type Product = {
-  id: number;
+  id: string; // Using UUID instead of number
   name: string;
-  unitPrice: number;
   currentStock: number;
+  suppliers: ProductSupplier[];
 };
 
 export type InsertProduct = z.infer<typeof insertProductSchema>;
+
+// Generic Supplier schema (for management purposes)
+export const insertSupplierSchema = z.object({
+  name: z.string().min(1),
+});
+
+export type Supplier = {
+  id: string; // UUID
+  name: string;
+};
+
+export type InsertSupplier = z.infer<typeof insertSupplierSchema>;
 
 // Purchase schemas
 export const insertPurchaseSchema = z.object({
@@ -39,7 +68,7 @@ export type InsertPurchase = z.infer<typeof insertPurchaseSchema>;
 // Purchase items schemas
 export const insertPurchaseItemSchema = z.object({
   purchaseId: z.number().int().positive(),
-  productId: z.number().int().positive(),
+  productId: z.string().uuid(), // Changed to UUID string
   quantity: z.number().int().positive(),
   unitPrice: z.number().min(0),
   finalValue: z.number().min(0),
@@ -48,7 +77,7 @@ export const insertPurchaseItemSchema = z.object({
 export type PurchaseItem = {
   id: number;
   purchaseId: number;
-  productId: number;
+  productId: string; // Changed to UUID string
   quantity: number;
   unitPrice: number;
   finalValue: number;
@@ -77,14 +106,14 @@ export type InsertSale = z.infer<typeof insertSaleSchema>;
 // Sale items schemas
 export const insertSaleItemSchema = z.object({
   saleId: z.number().int().positive(),
-  productId: z.number().int().positive(),
+  productId: z.string().uuid(), // Changed to UUID string
   quantity: z.number().int().positive(),
 });
 
 export type SaleItem = {
   id: number;
   saleId: number;
-  productId: number;
+  productId: string; // Changed to UUID string
   quantity: number;
 };
 
@@ -92,17 +121,17 @@ export type InsertSaleItem = z.infer<typeof insertSaleItemSchema>;
 
 // Inventory adjustments schemas
 export const insertInventoryAdjustmentSchema = z.object({
-  productId: z.number().int().positive(),
+  productId: z.string().uuid(), // Changed to UUID string
   adjustmentDate: z.string().min(1), // Accept string dates
   adjustmentType: z.string().min(1),
   quantity: z.number().int().positive(),
   reason: z.string().min(1),
-  notes: z.string().optional(),
+  notes: z.string().nullable().optional(), // Make notes explicitly nullable
 });
 
 export type InventoryAdjustment = {
   id: number;
-  productId: number;
+  productId: string; // Changed to UUID string
   adjustmentDate: string;
   adjustmentType: string;
   quantity: number;

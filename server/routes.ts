@@ -23,10 +23,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to get products" });
     }
   });
-
+  
   app.get("/api/products/:id", async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
+      const id = req.params.id;
       const product = await storage.getProduct(id);
       
       if (!product) {
@@ -38,12 +38,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to get product" });
     }
   });
-
+  
   app.post("/api/products", async (req, res) => {
     try {
-      const productData = insertProductSchema.parse(req.body);
-      const product = await storage.createProduct(productData);
-      res.status(201).json(product);
+      const productData = req.body;
+      
+      // Create product
+      const createdProduct = await storage.createProduct(productData);
+      
+      res.status(201).json(createdProduct);
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid product data", errors: error.errors });
@@ -51,18 +54,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to create product" });
     }
   });
-
+  
   app.patch("/api/products/:id", async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
-      const productData = insertProductSchema.partial().parse(req.body);
-      const product = await storage.updateProduct(id, productData);
+      const id = req.params.id;
+      const productData = req.body;
       
-      if (!product) {
+      const updatedProduct = await storage.updateProduct(id, productData);
+      
+      if (!updatedProduct) {
         return res.status(404).json({ message: "Product not found" });
       }
       
-      res.json(product);
+      res.json(updatedProduct);
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid product data", errors: error.errors });
@@ -70,6 +74,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to update product" });
     }
   });
+  
+  app.delete("/api/products/:id", async (req, res) => {
+    try {
+      const id = req.params.id;
+      const success = await storage.deleteProduct(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+      
+      res.status(204).end();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete product" });
+    }
+  });
+  
+  // Supplier routes
+  app.get("/api/suppliers", async (req, res) => {
+    try {
+      const suppliers = await storage.getSuppliers();
+      res.json(suppliers);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get suppliers" });
+    }
+  });
+  
+  app.get("/api/suppliers/:id", async (req, res) => {
+    try {
+      const id = req.params.id;
+      const supplier = await storage.getSupplier(id);
+      
+      if (!supplier) {
+        return res.status(404).json({ message: "Supplier not found" });
+      }
+      
+      res.json(supplier);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get supplier" });
+    }
+  });
+  
+  app.post("/api/suppliers", async (req, res) => {
+    try {
+      const supplierData = req.body;
+      
+      // Create supplier
+      const createdSupplier = await storage.createSupplier(supplierData);
+      
+      res.status(201).json(createdSupplier);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid supplier data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create supplier" });
+    }
+  });
+  
+  app.delete("/api/suppliers/:id", async (req, res) => {
+    try {
+      const id = req.params.id;
+      const success = await storage.deleteSupplier(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Supplier not found" });
+      }
+      
+      res.status(204).end();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete supplier" });
+    }
+  });
+
+
 
   // Purchase routes
   app.get("/api/purchases", async (req, res) => {
