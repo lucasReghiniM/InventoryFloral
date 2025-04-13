@@ -200,8 +200,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Process purchase items
       const createdItems = [];
       for (const item of items) {
-        // Make sure productId is valid
-        if (!item.productId || item.productId <= 0) {
+        // Make sure productId is valid (handle both string and number IDs)
+        let isValidId = false;
+        if (typeof item.productId === 'string') {
+          isValidId = Boolean(item.productId) && item.productId.length > 0;
+        } else if (typeof item.productId === 'number') {
+          isValidId = item.productId > 0;
+        }
+        
+        if (!isValidId) {
+          console.error("Invalid product ID:", item.productId, "Type:", typeof item.productId);
           return res.status(400).json({ 
             message: "Invalid product selection", 
             error: "Please select a valid product for all items" 
@@ -300,8 +308,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Process sale items
       const createdItems = [];
       for (const item of items) {
-        // Make sure productId is valid
-        if (!item.productId || item.productId <= 0) {
+        // Make sure productId is valid (handle both string and number IDs)
+        let isValidId = false;
+        if (typeof item.productId === 'string') {
+          isValidId = Boolean(item.productId) && item.productId.length > 0;
+        } else if (typeof item.productId === 'number') {
+          isValidId = item.productId > 0;
+        }
+        
+        if (!isValidId) {
+          console.error("Invalid product ID:", item.productId, "Type:", typeof item.productId);
           return res.status(400).json({ 
             message: "Invalid product selection", 
             error: "Please select a valid product for all items" 

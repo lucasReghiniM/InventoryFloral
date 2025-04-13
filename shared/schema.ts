@@ -69,7 +69,10 @@ export type InsertPurchase = z.infer<typeof insertPurchaseSchema>;
 // Purchase items schemas
 export const insertPurchaseItemSchema = z.object({
   purchaseId: z.number().int().positive(),
-  productId: z.string().uuid(), // Changed to UUID string
+  productId: z.union([
+    z.string(), // Accept any string ID (UUID or not)
+    z.number() // Also accept number IDs for backwards compatibility
+  ]),
   quantity: z.number().int().positive(),
   unitPrice: z.number().min(0),
   finalValue: z.number().min(0),
