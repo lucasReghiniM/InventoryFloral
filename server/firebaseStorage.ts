@@ -9,7 +9,8 @@ import {
   getDocs,
   query,
   where,
-  Timestamp
+  Timestamp,
+  setDoc
 } from "firebase/firestore";
 import type { 
   IStorage, 
@@ -24,7 +25,9 @@ import type {
   SaleItem, 
   InsertSaleItem,
   InventoryAdjustment,
-  InsertInventoryAdjustment
+  InsertInventoryAdjustment,
+  Supplier,
+  InsertSupplier
 } from "./storage";
 
 // Convert Firestore timestamp to string
@@ -95,6 +98,113 @@ export class FirebaseStorage implements IStorage {
     const newStock = currentStock + quantity;
     
     return this.updateProduct(id, { currentStock: newStock });
+  }
+
+  async deleteProduct(id: string): Promise<boolean> {
+    try {
+      // Convert id to number for Firestore
+      const numId = parseInt(id);
+      if (isNaN(numId)) {
+        return false;
+      }
+
+      const productRef = doc(db, "products", numId.toString());
+      const productSnap = await getDoc(productRef);
+      
+      if (!productSnap.exists()) {
+        return false;
+      }
+      
+      await deleteDoc(productRef);
+      return true;
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      return false;
+    }
+  }
+  
+  // Supplier methods
+  async getSuppliers(): Promise<Supplier[]> {
+    try {
+      const suppliersRef = collection(db, "suppliers");
+      const snapshot = await getDocs(suppliersRef);
+      
+      // For suppliers, use the string ID directly from Firestore
+      return snapshot.docs.map(doc => ({
+        id: doc.id,
+        name: doc.data().name
+      }));
+    } catch (error) {
+      console.error("Error getting suppliers:", error);
+      return [];
+    }
+  }
+  
+  async getSupplier(id: string): Promise<Supplier | undefined> {
+    try {
+      const supplierRef = doc(db, "suppliers", id);
+      const supplierSnap = await getDoc(supplierRef);
+      
+      if (!supplierSnap.exists()) {
+        return undefined;
+      }
+      
+      return {
+        id,
+        name: supplierSnap.data().name
+      };
+    } catch (error) {
+      console.error("Error getting supplier:", error);
+      return undefined;
+    }
+  }
+  
+  async createSupplier(supplier: InsertSupplier): Promise<Supplier> {
+    try {
+      // For suppliers, we're using the UUID directly as the document ID
+      if (!supplier.id) {
+        console.error("Supplier ID is missing in createSupplier");
+        throw new Error("Supplier ID is required");
+      }
+      
+      console.log("Creating supplier with ID:", supplier.id, "and name:", supplier.name);
+      
+      // Create document with the supplier's UUID as the ID
+      await setDoc(doc(db, "suppliers", supplier.id), {
+        name: supplier.name
+      });
+      
+      console.log("Supplier created successfully!");
+      
+      return {
+        id: supplier.id,
+        name: supplier.name
+      };
+    } catch (error) {
+      console.error("Detailed error creating supplier:", error);
+      if (error instanceof Error) {
+        console.error("Error message:", error.message);
+        console.error("Error stack:", error.stack);
+      }
+      throw error;
+    }
+  }
+  
+  async deleteSupplier(id: string): Promise<boolean> {
+    try {
+      const supplierRef = doc(db, "suppliers", id);
+      const supplierSnap = await getDoc(supplierRef);
+      
+      if (!supplierSnap.exists()) {
+        return false;
+      }
+      
+      await deleteDoc(supplierRef);
+      return true;
+    } catch (error) {
+      console.error("Error deleting supplier:", error);
+      return false;
+    }
   }
 
   // Purchase methods

@@ -25,7 +25,6 @@ interface ProductFormProps {
 
 const validationSchema = insertProductSchema.extend({
   name: z.string().min(1, "Product name is required"),
-  currentStock: z.number().min(0, "Stock must be 0 or greater"),
 });
 
 type FormValues = z.infer<typeof validationSchema>;
@@ -40,7 +39,6 @@ const ProductForm: React.FC<ProductFormProps> = ({ onComplete }) => {
     resolver: zodResolver(validationSchema),
     defaultValues: {
       name: "",
-      currentStock: 0,
       suppliers: [],
     },
   });
@@ -62,20 +60,23 @@ const ProductForm: React.FC<ProductFormProps> = ({ onComplete }) => {
 
   const onSubmit = async (data: FormValues) => {
     try {
-      // Transform suppliers to the format required by the API
-      const formattedSuppliers = suppliers.map((s) => ({
-        name: s.name,
-        priceHistory: [
-          {
-            date: new Date().toISOString(),
-            price: s.price,
-          },
-        ],
-      }));
+      // Transform suppliers to the format required by the API (if any)
+      const formattedSuppliers = suppliers.length > 0 
+        ? suppliers.map((s) => ({
+            name: s.name,
+            priceHistory: [
+              {
+                date: new Date().toISOString(),
+                price: s.price,
+              },
+            ],
+          }))
+        : [];
 
       const productData = {
         ...data,
         id: uuidv4(), // Generate UUID for product
+        currentStock: 0, // Default to 0 stock for new products
         suppliers: formattedSuppliers,
       };
 
@@ -125,28 +126,11 @@ const ProductForm: React.FC<ProductFormProps> = ({ onComplete }) => {
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="currentStock"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Initial Stock</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="0"
-                      {...field}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+
 
             <div className="space-y-4">
               <div>
-                <FormLabel>Product Suppliers</FormLabel>
+                <FormLabel>Product Suppliers (Optional)</FormLabel>
                 <div className="mt-2 space-y-4">
                   {suppliers.map((supplier, index) => (
                     <div
