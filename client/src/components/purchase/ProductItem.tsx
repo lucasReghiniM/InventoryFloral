@@ -67,22 +67,43 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, products, onRemove, 
         <div>
           <Label className="mb-1">Product Name</Label>
           {products.length > 0 ? (
-            <Select
-              value={product.productId.toString()}
-              onValueChange={handleExistingProductSelect}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select product" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="0">Select product</SelectItem>
-                {products.map((p) => (
-                  <SelectItem key={p.id} value={p.id.toString()}>
-                    {p.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Popover open={open} onOpenChange={setOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={open}
+                  className="w-full justify-between"
+                >
+                  {product.productId > 0
+                    ? products.find((p) => p.id === product.productId)?.name
+                    : "Search products..."}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0">
+                <Command>
+                  <CommandInput placeholder="Search products..." />
+                  <CommandEmpty>No product found.</CommandEmpty>
+                  <CommandGroup>
+                    {products.map((p) => (
+                      <CommandItem
+                        key={p.id}
+                        value={p.id.toString()}
+                        onSelect={() => handleExistingProductSelect(p.id.toString())}
+                      >
+                        <Check
+                          className={`mr-2 h-4 w-4 ${
+                            product.productId === p.id ? "opacity-100" : "opacity-0"
+                          }`}
+                        />
+                        {p.name}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </Command>
+              </PopoverContent>
+            </Popover>
           ) : (
             <Input
               value={product.name}
