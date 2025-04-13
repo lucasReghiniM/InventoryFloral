@@ -1,6 +1,8 @@
 import {
   type Product as ProductType,
   type InsertProduct as InsertProductType,
+  type Supplier,
+  type InsertSupplier,
   type Purchase as PurchaseType,
   type InsertPurchase as InsertPurchaseType,
   type PurchaseItem as PurchaseItemType,
@@ -16,8 +18,8 @@ import {
 // Export types for use in firebaseStorage
 export type Product = ProductType;
 export type InsertProduct = InsertProductType;
-export type Supplier = SupplierType;
-export type InsertSupplier = InsertSupplierType;
+// Export Supplier types directly
+export { Supplier, InsertSupplier };
 export type Purchase = PurchaseType;
 export type InsertPurchase = InsertPurchaseType;
 export type PurchaseItem = PurchaseItemType;
@@ -113,11 +115,16 @@ export class MemStorage implements IStorage {
   }
 
   async createProduct(product: InsertProduct): Promise<Product> {
+    // Make sure product has an ID and suppliers array
+    if (!product.id) {
+      throw new Error("Product must have an ID");
+    }
+    
     const newProduct: Product = {
       id: product.id,
       name: product.name,
       currentStock: product.currentStock,
-      suppliers: product.suppliers || []
+      suppliers: product.suppliers ?? [] // Use nullish coalescing to ensure empty array if undefined
     };
     this.productsMap.set(newProduct.id, newProduct);
     return newProduct;

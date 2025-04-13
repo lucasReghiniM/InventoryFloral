@@ -111,7 +111,7 @@ export class FirebaseStorage implements IStorage {
   async createProduct(product: InsertProduct): Promise<Product> {
     console.log("Creating product with data:", product);
     
-    // Use the provided ID or generate a new UUID
+    // Use the provided ID or generate a new UUID if for some reason it's missing
     const productId = product.id || uuidv4();
     console.log("Using product ID:", productId);
     
@@ -119,7 +119,7 @@ export class FirebaseStorage implements IStorage {
       ...product,
       id: productId,
       currentStock: product.currentStock || 0,
-      suppliers: product.suppliers || []
+      suppliers: product.suppliers ?? [] // Use nullish coalescing to ensure empty array if undefined
     };
 
     console.log("Prepared product data:", newProduct);
@@ -217,21 +217,32 @@ export class FirebaseStorage implements IStorage {
 
   async deleteProduct(id: string): Promise<boolean> {
     try {
-      // Convert id to number for Firestore
-      const numId = parseInt(id);
-      if (isNaN(numId)) {
-        return false;
-      }
-
-      const productRef = doc(db, "products", numId.toString());
-      const productSnap = await getDoc(productRef);
+      console.log("Deleting product with ID:", id);
       
-      if (!productSnap.exists()) {
-        return false;
+      // First try to look up by document ID directly
+      const productRef = doc(db, "products", id);
+      let productSnap = await getDoc(productRef);
+      
+      if (productSnap.exists()) {
+        console.log("Found product by document ID, deleting");
+        await deleteDoc(productRef);
+        return true;
       }
       
-      await deleteDoc(productRef);
-      return true;
+      // If not found directly, try querying by internal ID field
+      console.log("Product not found by document ID, trying by internal id field");
+      const productsRef = collection(db, "products");
+      const q = query(productsRef, where("id", "==", id));
+      const querySnapshot = await getDocs(q);
+      
+      if (!querySnapshot.empty) {
+        console.log("Found product by internal id field query, deleting");
+        await deleteDoc(querySnapshot.docs[0].ref);
+        return true;
+      }
+      
+      console.log("Product not found for deletion");
+      return false;
     } catch (error) {
       console.error("Error deleting product:", error);
       return false;
