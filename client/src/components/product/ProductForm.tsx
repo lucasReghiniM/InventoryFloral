@@ -1,14 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { insertProductSchema } from "@shared/schema";
-import { apiRequest, queryClient } from "../../lib/queryClient";
+import { apiRequest, queryClient, getQueryFn } from "../../lib/queryClient";
 import { z } from "zod";
 import { useToast } from "../../hooks/use-toast";
 import { v4 as uuidv4 } from "uuid";
+import { X, Plus, Check, ChevronsUpDown } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -17,7 +30,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { X, Plus } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 interface ProductFormProps {
   onComplete?: () => void;
@@ -29,11 +42,24 @@ const validationSchema = insertProductSchema.extend({
 
 type FormValues = z.infer<typeof validationSchema>;
 
+interface Supplier {
+  id: string;
+  name: string;
+}
+
 const ProductForm: React.FC<ProductFormProps> = ({ onComplete }) => {
   const { toast } = useToast();
-  const [suppliers, setSuppliers] = useState<Array<{ name: string; price: number }>>([]);
+  const [suppliers, setSuppliers] = useState<Array<{ id?: string; name: string; price: number }>>([]);
   const [supplierName, setSupplierName] = useState("");
   const [supplierPrice, setSupplierPrice] = useState("");
+  const [open, setOpen] = useState(false);
+  const [selectedSupplierId, setSelectedSupplierId] = useState<string>("");
+  
+  // Fetch suppliers from API
+  const { data: availableSuppliers = [] } = useQuery<Supplier[]>({
+    queryKey: ["/api/suppliers"],
+    queryFn: getQueryFn({ on401: "returnNull" }),
+  });
 
   const form = useForm<FormValues>({
     resolver: zodResolver(validationSchema),
@@ -44,6 +70,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ onComplete }) => {
   });
 
   const addSupplier = () => {
+    // Manual entry
     if (supplierName.trim() && parseFloat(supplierPrice) > 0) {
       setSuppliers([
         ...suppliers,
@@ -51,6 +78,26 @@ const ProductForm: React.FC<ProductFormProps> = ({ onComplete }) => {
       ]);
       setSupplierName("");
       setSupplierPrice("");
+    }
+  };
+  
+  // Add supplier from dropdown
+  const addSelectedSupplier = () => {
+    if (selectedSupplierId && parseFloat(supplierPrice) > 0) {
+      const selectedSupplier = availableSuppliers.find(s => s.id === selectedSupplierId);
+      if (selectedSupplier) {
+        setSuppliers([
+          ...suppliers,
+          { 
+            id: selectedSupplier.id, 
+            name: selectedSupplier.name, 
+            price: parseFloat(supplierPrice) 
+          },
+        ]);
+        setSelectedSupplierId("");
+        setSupplierPrice("");
+        setOpen(false);
+      }
     }
   };
 
@@ -156,31 +203,101 @@ const ProductForm: React.FC<ProductFormProps> = ({ onComplete }) => {
                 </div>
               </div>
 
-              <div className="flex gap-2">
-                <div className="flex-1">
-                  <Input
-                    placeholder="Supplier name"
-                    value={supplierName}
-                    onChange={(e) => setSupplierName(e.target.value)}
-                  />
+              <div className="space-y-4">
+                <div className="flex flex-col space-y-2">
+                  <label className="text-sm font-medium">Select Existing Supplier</label>
+                  <div className="flex gap-2">
+                    <Popover open={open} onOpenChange={setOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={open}
+                          className="flex-1 justify-between"
+                        >
+                          {selectedSupplierId
+                            ? availableSuppliers.find((supplier) => supplier.id === selectedSupplierId)?.name
+                            : "Search suppliers..."}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0">
+                        <Command>
+                          <CommandInput placeholder="Search suppliers..." />
+                          <CommandEmpty>No supplier found.</CommandEmpty>
+                          <CommandGroup>
+                            {availableSuppliers.map((supplier) => (
+                              <CommandItem
+                                key={supplier.id}
+                                value={supplier.id}
+                                onSelect={() => {
+                                  setSelectedSupplierId(supplier.id === selectedSupplierId ? "" : supplier.id);
+                                  setOpen(false);
+                                }}
+                              >
+                                <Check
+                                  className={`mr-2 h-4 w-4 ${
+                                    selectedSupplierId === supplier.id ? "opacity-100" : "opacity-0"
+                                  }`}
+                                />
+                                {supplier.name}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    <div className="w-24">
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="Price"
+                        value={supplierPrice}
+                        onChange={(e) => setSupplierPrice(e.target.value)}
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={addSelectedSupplier}
+                      disabled={!selectedSupplierId || !supplierPrice}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-                <div className="w-24">
-                  <Input
-                    type="number"
-                    step="0.01"
-                    placeholder="Price"
-                    value={supplierPrice}
-                    onChange={(e) => setSupplierPrice(e.target.value)}
-                  />
+              
+                <div className="flex flex-col space-y-2">
+                  <label className="text-sm font-medium">Or Add New Supplier</label>
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <Input
+                        placeholder="New supplier name"
+                        value={supplierName}
+                        onChange={(e) => setSupplierName(e.target.value)}
+                      />
+                    </div>
+                    <div className="w-24">
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="Price"
+                        value={supplierPrice}
+                        onChange={(e) => setSupplierPrice(e.target.value)}
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={addSupplier}
+                      disabled={!supplierName.trim() || !supplierPrice}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={addSupplier}
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
               </div>
             </div>
 

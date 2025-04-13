@@ -1,9 +1,20 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Trash } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Trash, Check, ChevronsUpDown } from "lucide-react";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface Product {
   id: number;
@@ -28,6 +39,8 @@ interface ProductItemProps {
 }
 
 const ProductItem: React.FC<ProductItemProps> = ({ product, products, onRemove, onChange }) => {
+  const [open, setOpen] = useState(false);
+
   useEffect(() => {
     // Calculate final value whenever unit price or quantity changes
     const finalValue = product.unitPrice * product.quantity;
@@ -44,6 +57,7 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, products, onRemove, 
         name: selectedProduct.name,
         unitPrice: selectedProduct.unitPrice
       });
+      setOpen(false);
     }
   };
 
