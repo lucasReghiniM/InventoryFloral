@@ -12,6 +12,7 @@ import {
   Timestamp,
   setDoc
 } from "firebase/firestore";
+import { v4 as uuidv4 } from 'uuid';
 import type { 
   IStorage, 
   Product, 
@@ -192,14 +193,26 @@ export class FirebaseStorage implements IStorage {
     }
   }
 
-  async updateProductStock(id: number, quantity: number): Promise<Product | undefined> {
-    const product = await this.getProduct(id);
-    if (!product) return undefined;
+  async updateProductStock(id: string, quantity: number): Promise<Product | undefined> {
+    console.log("updateProductStock called with ID:", id, "Type:", typeof id);
+    console.log("Quantity:", quantity);
     
-    const currentStock = product.currentStock || 0;
-    const newStock = currentStock + quantity;
-    
-    return this.updateProduct(id, { currentStock: newStock });
+    try {
+      const product = await this.getProduct(id);
+      if (!product) {
+        console.log("Product not found for stock update");
+        return undefined;
+      }
+      
+      const currentStock = product.currentStock || 0;
+      const newStock = currentStock + quantity;
+      console.log("Updating stock from", currentStock, "to", newStock);
+      
+      return this.updateProduct(id, { currentStock: newStock });
+    } catch (error) {
+      console.error("Error in updateProductStock:", error);
+      return undefined;
+    }
   }
 
   async deleteProduct(id: string): Promise<boolean> {
@@ -547,23 +560,33 @@ export class FirebaseStorage implements IStorage {
     });
   }
 
-  async getInventoryAdjustmentsForProduct(productId: number): Promise<InventoryAdjustment[]> {
-    const adjustmentsRef = collection(db, "inventoryAdjustments");
-    const q = query(adjustmentsRef, where("productId", "==", productId));
-    const snapshot = await getDocs(q);
+  async getInventoryAdjustmentsForProduct(productId: string): Promise<InventoryAdjustment[]> {
+    console.log("Getting inventory adjustments for product ID:", productId);
     
-    return snapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        id: Number(doc.id),
-        productId: data.productId,
-        quantity: data.quantity,
-        reason: data.reason,
-        notes: data.notes || null,
-        adjustmentDate: convertTimestampToString(data.adjustmentDate),
-        adjustmentType: data.adjustmentType
-      };
-    });
+    try {
+      const adjustmentsRef = collection(db, "inventoryAdjustments");
+      const q = query(adjustmentsRef, where("productId", "==", productId));
+      const snapshot = await getDocs(q);
+      
+      const adjustments = snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: Number(doc.id),
+          productId: data.productId,
+          quantity: data.quantity,
+          reason: data.reason,
+          notes: data.notes || null,
+          adjustmentDate: convertTimestampToString(data.adjustmentDate),
+          adjustmentType: data.adjustmentType
+        };
+      });
+      
+      console.log(`Found ${adjustments.length} adjustments for product ${productId}`);
+      return adjustments;
+    } catch (error) {
+      console.error("Error getting inventory adjustments for product:", error);
+      return [];
+    }
   }
 
   async createInventoryAdjustment(adjustment: InsertInventoryAdjustment): Promise<InventoryAdjustment> {

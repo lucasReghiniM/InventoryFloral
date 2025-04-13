@@ -366,10 +366,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/inventory-adjustments/product/:productId", async (req, res) => {
     try {
-      const productId = parseInt(req.params.productId);
+      const productId = req.params.productId;
+      console.log("Getting inventory adjustments for product ID:", productId);
       const adjustments = await storage.getInventoryAdjustmentsForProduct(productId);
       res.json(adjustments);
     } catch (error) {
+      console.error("Error getting inventory adjustments:", error);
       res.status(500).json({ message: "Failed to get inventory adjustments" });
     }
   });

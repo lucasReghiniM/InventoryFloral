@@ -243,7 +243,7 @@ export class MemStorage implements IStorage {
     return Array.from(this.inventoryAdjustmentsMap.values());
   }
 
-  async getInventoryAdjustmentsForProduct(productId: number): Promise<InventoryAdjustment[]> {
+  async getInventoryAdjustmentsForProduct(productId: string): Promise<InventoryAdjustment[]> {
     return Array.from(this.inventoryAdjustmentsMap.values()).filter(
       adjustment => adjustment.productId === productId
     );
