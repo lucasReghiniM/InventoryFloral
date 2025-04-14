@@ -40,7 +40,7 @@ const Inventory: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h2 className="text-xl font-semibold">Current Inventory</h2>
+        <h2 className="text-xl font-semibold">Estoque atual</h2>
         
         <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-2">
           <div className="relative">
@@ -58,7 +58,7 @@ const Inventory: React.FC = () => {
           
           <Button onClick={() => setIsRemoveModalOpen(true)} className="bg-primary hover:bg-primary/90">
             <Plus className="h-4 w-4 mr-2" />
-            Adjust Stock
+            Ajustar estoque
           </Button>
         </div>
       </div>
@@ -69,7 +69,7 @@ const Inventory: React.FC = () => {
         onRemoveClick={handleRemoveClick} 
       />
 
-      <h2 className="text-xl font-semibold mt-8 mb-6">Inventory History</h2>
+      <h2 className="text-xl font-semibold mt-8 mb-6">Historico do estoque</h2>
       <InventoryHistory adjustments={adjustments || []} isLoading={isAdjustmentsLoading} products={products || []} />
 
       <RemoveProductModal 

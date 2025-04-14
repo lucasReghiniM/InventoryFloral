@@ -30,11 +30,11 @@ export default function Suppliers() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold">Suppliers</h2>
+        <h2 className="text-3xl font-bold">Fornecedores</h2>
         {!showForm && (
           <Button onClick={handleAddNew} className="flex items-center gap-1">
             <Plus className="h-4 w-4" />
-            Add New Supplier
+            Adicionar fornecedor
           </Button>
         )}
       </div>

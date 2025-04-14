@@ -159,12 +159,12 @@ const SaleForm: React.FC<SaleFormProps> = ({ onComplete }) => {
   return (
     <Card>
       <CardContent className="pt-6">
-        <h2 className="text-xl font-semibold mb-6">New Sale</h2>
+        <h2 className="text-xl font-semibold mb-6">Nova venda</h2>
         
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
-              <Label htmlFor="customerName" className="mb-1">Customer Name</Label>
+              <Label htmlFor="customerName" className="mb-1">Nome do cliente</Label>
               <Input
                 id="customerName"
                 placeholder="John Doe"
@@ -177,7 +177,7 @@ const SaleForm: React.FC<SaleFormProps> = ({ onComplete }) => {
             </div>
             
             <div>
-              <Label htmlFor="customerContact" className="mb-1">Customer Contact</Label>
+              <Label htmlFor="customerContact" className="mb-1">Contato do cliente</Label>
               <Input
                 id="customerContact"
                 placeholder="Phone or Email"
@@ -190,7 +190,7 @@ const SaleForm: React.FC<SaleFormProps> = ({ onComplete }) => {
             </div>
             
             <div>
-              <Label htmlFor="saleDate" className="mb-1">Sale Date</Label>
+              <Label htmlFor="saleDate" className="mb-1">Data</Label>
               <Input
                 id="saleDate"
                 type="date"
@@ -203,7 +203,7 @@ const SaleForm: React.FC<SaleFormProps> = ({ onComplete }) => {
             </div>
             
             <div>
-              <Label htmlFor="saleAmount" className="mb-1">Sale Amount</Label>
+              <Label htmlFor="saleAmount" className="mb-1">Valor</Label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <span className="text-neutral-800 sm:text-sm">$</span>
@@ -224,7 +224,7 @@ const SaleForm: React.FC<SaleFormProps> = ({ onComplete }) => {
             </div>
           </div>
           
-          <h3 className="font-semibold mb-3 text-neutral-800">Products Used</h3>
+          <h3 className="font-semibold mb-3 text-neutral-800">Produtos utilizados</h3>
           
           <div className="mb-6 space-y-4">
             {productsUsed.map((product) => (
@@ -245,7 +245,7 @@ const SaleForm: React.FC<SaleFormProps> = ({ onComplete }) => {
             className="mb-6 text-primary hover:text-primary/90 hover:bg-primary/10"
           >
             <PlusCircle className="mr-2 h-4 w-4" />
-            Add Product
+            Adicionar produto
           </Button>
           
           <div className="flex justify-end">
@@ -254,7 +254,7 @@ const SaleForm: React.FC<SaleFormProps> = ({ onComplete }) => {
               className="bg-primary hover:bg-primary/90"
               disabled={createSaleMutation.isPending}
             >
-              {createSaleMutation.isPending ? "Saving..." : "Complete Sale"}
+              {createSaleMutation.isPending ? "Saving..." : "Completar venda"}
             </Button>
           </div>
         </form>

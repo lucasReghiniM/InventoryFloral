@@ -103,15 +103,15 @@ const InventoryList: React.FC<InventoryListProps> = ({ products, isLoading, onRe
               </div>
               <div className="mt-2 text-sm text-neutral-800">
                 <div className="flex justify-between mb-1">
-                  <span>Current Stock:</span>
-                  <span className="font-medium">{product.currentStock} units</span>
+                  <span>Quantidade atual:</span>
+                  <span className="font-medium">{product.currentStock} unidades</span>
                 </div>
                 <div className="flex justify-between mb-1">
-                  <span>Unit Price:</span>
+                  <span>Preço unitario:</span>
                   <span className="font-medium">${product.unitPrice ? product.unitPrice.toFixed(2) : '0.00'}</span>
                 </div>
                 <div className="flex justify-between mb-1">
-                  <span>Inventory Value:</span>
+                  <span>Valor em estoque:</span>
                   <span className="font-medium">${inventoryValue.toFixed(2)}</span>
                 </div>
               </div>
@@ -122,7 +122,7 @@ const InventoryList: React.FC<InventoryListProps> = ({ products, isLoading, onRe
                   className="text-primary hover:text-primary/90 hover:bg-primary/10 p-0 h-8"
                 >
                   <History className="h-4 w-4 mr-1" />
-                  History
+                  Historico
                 </Button>
                 <Button 
                   variant="ghost" 

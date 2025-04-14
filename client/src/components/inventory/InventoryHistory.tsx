@@ -80,11 +80,11 @@ const InventoryHistory: React.FC<InventoryHistoryProps> = ({ adjustments, produc
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="px-4 py-3 text-left text-xs font-medium text-neutral-800 uppercase tracking-wider">Date</TableHead>
-                <TableHead className="px-4 py-3 text-left text-xs font-medium text-neutral-800 uppercase tracking-wider">Product</TableHead>
-                <TableHead className="px-4 py-3 text-left text-xs font-medium text-neutral-800 uppercase tracking-wider">Type</TableHead>
-                <TableHead className="px-4 py-3 text-left text-xs font-medium text-neutral-800 uppercase tracking-wider">Quantity</TableHead>
-                <TableHead className="px-4 py-3 text-left text-xs font-medium text-neutral-800 uppercase tracking-wider">Reason</TableHead>
+                <TableHead className="px-4 py-3 text-left text-xs font-medium text-neutral-800 uppercase tracking-wider">Data</TableHead>
+                <TableHead className="px-4 py-3 text-left text-xs font-medium text-neutral-800 uppercase tracking-wider">Produto</TableHead>
+                <TableHead className="px-4 py-3 text-left text-xs font-medium text-neutral-800 uppercase tracking-wider">Tipo</TableHead>
+                <TableHead className="px-4 py-3 text-left text-xs font-medium text-neutral-800 uppercase tracking-wider">Quantidade</TableHead>
+                <TableHead className="px-4 py-3 text-left text-xs font-medium text-neutral-800 uppercase tracking-wider">Motivo</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

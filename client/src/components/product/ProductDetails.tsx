@@ -255,19 +255,19 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ productId, onClose }) =
           </div>
         </div>
         <CardDescription>
-          Current Stock: {product.currentStock} units
+          Quantidade em estoque: {product.currentStock} units
         </CardDescription>
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="suppliers">
           <TabsList className="mb-4">
-            <TabsTrigger value="suppliers">Suppliers & Prices</TabsTrigger>
-            <TabsTrigger value="history">Inventory History</TabsTrigger>
+            <TabsTrigger value="suppliers">Fornecedores e preços</TabsTrigger>
+            <TabsTrigger value="history">Historico de estoque</TabsTrigger>
           </TabsList>
           
           <TabsContent value="suppliers" className="space-y-4">
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-medium">Product Suppliers</h3>
+              <h3 className="text-lg font-medium">Fornecedores</h3>
               {!showAddSupplier && (
                 <Button 
                   size="sm" 
@@ -283,7 +283,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ productId, onClose }) =
             {showAddSupplier && (
               <div className="p-4 border rounded-md space-y-3">
                 <div>
-                  <Label htmlFor="supplierName">Supplier Name</Label>
+                  <Label htmlFor="supplierName">Nome do fornecedor</Label>
                   <Input
                     id="supplierName"
                     value={supplierName}
@@ -292,7 +292,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ productId, onClose }) =
                   />
                 </div>
                 <div>
-                  <Label htmlFor="supplierPrice">Price</Label>
+                  <Label htmlFor="supplierPrice">Preço</Label>
                   <Input
                     id="supplierPrice"
                     type="number"
@@ -312,10 +312,10 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ productId, onClose }) =
                       setSupplierPrice("");
                     }}
                   >
-                    Cancel
+                    Cancelar
                   </Button>
                   <Button size="sm" onClick={handleAddSupplier}>
-                    Add Supplier
+                    Adicionar fornecedore
                   </Button>
                 </div>
               </div>

@@ -270,13 +270,13 @@ const PurchaseForm: React.FC<PurchaseFormProps> = ({ onComplete }) => {
   return (
     <Card>
       <CardContent className="pt-6">
-        <h2 className="text-xl font-semibold mb-6">New Purchase</h2>
+        <h2 className="text-xl font-semibold mb-6">Nova compra</h2>
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
               <Label htmlFor="invoiceNumber" className="mb-1">
-                Invoice Number
+                Numero da nota
               </Label>
               <Input
                 id="invoiceNumber"
@@ -293,7 +293,7 @@ const PurchaseForm: React.FC<PurchaseFormProps> = ({ onComplete }) => {
 
             <div>
               <Label htmlFor="orderDate" className="mb-1">
-                Order Date
+                Data
               </Label>
               <Input
                 id="orderDate"
@@ -310,7 +310,7 @@ const PurchaseForm: React.FC<PurchaseFormProps> = ({ onComplete }) => {
 
             <div>
               <Label htmlFor="supplier" className="mb-1">
-                Supplier Name
+                Fornecedor
               </Label>
               <Popover
                 open={supplierPopoverOpen}
@@ -330,7 +330,7 @@ const PurchaseForm: React.FC<PurchaseFormProps> = ({ onComplete }) => {
                 <PopoverContent className="w-full p-0">
                   <Command>
                     <CommandInput placeholder="Search suppliers..." />
-                    <CommandEmpty>No supplier found.</CommandEmpty>
+                    <CommandEmpty>Nenhum fornecedor encontrado</CommandEmpty>
                     <CommandGroup>
                       {suppliers.map((supplier) => (
                         <CommandItem
@@ -366,7 +366,7 @@ const PurchaseForm: React.FC<PurchaseFormProps> = ({ onComplete }) => {
 
             <div>
               <Label htmlFor="deliveryCost" className="mb-1">
-                Delivery Cost
+                Custo de entrega
               </Label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -390,7 +390,7 @@ const PurchaseForm: React.FC<PurchaseFormProps> = ({ onComplete }) => {
             </div>
           </div>
 
-          <h3 className="font-semibold mb-3 text-neutral-800">Products</h3>
+          <h3 className="font-semibold mb-3 text-neutral-800">Produtos</h3>
 
           <div className="mb-6 space-y-4">
             {products.map((product) => (
@@ -411,7 +411,7 @@ const PurchaseForm: React.FC<PurchaseFormProps> = ({ onComplete }) => {
             className="mb-6 text-primary hover:text-primary/90 hover:bg-primary/10"
           >
             <PlusCircle className="mr-2 h-4 w-4" />
-            Add Product
+            Adicionar produto
           </Button>
 
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-t pt-4 border-neutral-200">
@@ -424,7 +424,7 @@ const PurchaseForm: React.FC<PurchaseFormProps> = ({ onComplete }) => {
               </div>
               <div className="flex items-center mt-1">
                 <span className="font-semibold text-neutral-800">
-                  Delivery:
+                  Entrega:
                 </span>
                 <span className="ml-2">${(deliveryCost || 0).toFixed(2)}</span>
               </div>
@@ -441,7 +441,7 @@ const PurchaseForm: React.FC<PurchaseFormProps> = ({ onComplete }) => {
               className="w-full sm:w-auto bg-primary hover:bg-primary/90"
               disabled={createPurchaseMutation.isPending}
             >
-              {createPurchaseMutation.isPending ? "Saving..." : "Save Purchase"}
+              {createPurchaseMutation.isPending ? "Saving..." : "Salvar compra"}
             </Button>
           </div>
         </form>

@@ -64,7 +64,7 @@ const SupplierList: React.FC<SupplierListProps> = ({
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Suppliers</CardTitle>
+          <CardTitle>Fornecedores</CardTitle>
           <CardDescription>
             Loading suppliers...
           </CardDescription>
@@ -83,9 +83,9 @@ const SupplierList: React.FC<SupplierListProps> = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Suppliers</CardTitle>
+        <CardTitle>Fornecedores</CardTitle>
         <CardDescription>
-          Manage your flower suppliers
+          Gerencio os Fornecedores
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -94,15 +94,15 @@ const SupplierList: React.FC<SupplierListProps> = ({
             <p className="text-muted-foreground pb-4">No suppliers found</p>
             <Button onClick={onAddNewClick} className="flex mx-auto items-center gap-1">
               <Plus className="h-4 w-4" />
-              Add Your First Supplier
+              Adiciona o primeiro fornecedor
             </Button>
           </div>
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Supplier Name</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>Nome do Fornecedor</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

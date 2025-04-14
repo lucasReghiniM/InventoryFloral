@@ -5,22 +5,21 @@ import PurchaseDetails from "../components/purchase/PurchaseDetails";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
 
 const Purchases: React.FC = () => {
   const [showNewForm, setShowNewForm] = useState(false);
-  const [selectedPurchaseId, setSelectedPurchaseId] = useState<number | null>(null);
-  
-  const { 
-    data: purchases, 
-    isLoading: isPurchasesLoading 
-  } = useQuery({
+  const [selectedPurchaseId, setSelectedPurchaseId] = useState<number | null>(
+    null,
+  );
+
+  const { data: purchases, isLoading: isPurchasesLoading } = useQuery({
     queryKey: ["/api/purchases"],
   });
 
@@ -35,15 +34,15 @@ const Purchases: React.FC = () => {
   return (
     <div className="space-y-6">
       {selectedPurchaseId ? (
-        <PurchaseDetails 
-          purchaseId={selectedPurchaseId} 
-          onClose={handleCloseDetails} 
+        <PurchaseDetails
+          purchaseId={selectedPurchaseId}
+          onClose={handleCloseDetails}
         />
       ) : (
         <>
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold">Purchases</h1>
-            <Button 
+            <h1 className="text-2xl font-bold">Compras</h1>
+            <Button
               onClick={() => setShowNewForm(!showNewForm)}
               variant={showNewForm ? "outline" : "default"}
               className="flex items-center gap-1"
@@ -56,8 +55,10 @@ const Purchases: React.FC = () => {
           {showNewForm && (
             <Card>
               <CardHeader>
-                <CardTitle>New Purchase</CardTitle>
-                <CardDescription>Add a new purchase to your inventory</CardDescription>
+                <CardTitle>Nova compra</CardTitle>
+                <CardDescription>
+                  Adicione uma nova compra para atualizar o estoque.
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <PurchaseForm onComplete={() => setShowNewForm(false)} />
@@ -65,9 +66,9 @@ const Purchases: React.FC = () => {
             </Card>
           )}
 
-          <PurchaseList 
-            purchases={purchases || []} 
-            isLoading={isPurchasesLoading} 
+          <PurchaseList
+            purchases={purchases || []}
+            isLoading={isPurchasesLoading}
             onViewDetails={handleViewDetails}
           />
         </>

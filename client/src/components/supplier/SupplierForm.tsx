@@ -72,7 +72,7 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ onComplete }) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Add New Supplier</CardTitle>
+        <CardTitle>Adicionar novo Fornecedor</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -82,9 +82,9 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ onComplete }) => {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Supplier Name</FormLabel>
+                  <FormLabel>Nome do Fornecedor</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter supplier name" {...field} />
+                    <Input placeholder="Nome do Fornecedor" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -97,9 +97,9 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ onComplete }) => {
                 variant="outline"
                 onClick={() => onComplete?.()}
               >
-                Cancel
+                Cancelar
               </Button>
-              <Button type="submit">Create Supplier</Button>
+              <Button type="submit">Criar fornecedor</Button>
             </div>
           </form>
         </Form>

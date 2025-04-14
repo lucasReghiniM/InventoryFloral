@@ -63,27 +63,27 @@ const SaleList: React.FC<SaleListProps> = ({ sales, isLoading, onViewDetails }) 
   return (
     <Card>
       <CardContent className="pt-6">
-        <h2 className="text-xl font-semibold mb-6">Recent Sales</h2>
+        <h2 className="text-xl font-semibold mb-6">Vendas recentes</h2>
         
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="px-4 py-3 text-left text-xs font-medium text-neutral-800 uppercase tracking-wider">Date</TableHead>
-                <TableHead className="px-4 py-3 text-left text-xs font-medium text-neutral-800 uppercase tracking-wider">Customer</TableHead>
-                <TableHead className="px-4 py-3 text-left text-xs font-medium text-neutral-800 uppercase tracking-wider">Contact</TableHead>
-                <TableHead className="px-4 py-3 text-left text-xs font-medium text-neutral-800 uppercase tracking-wider">Amount</TableHead>
-                <TableHead className="px-4 py-3 text-left text-xs font-medium text-neutral-800 uppercase tracking-wider">Actions</TableHead>
+                <TableHead className="px-4 py-3 text-left text-xs font-medium text-neutral-800 uppercase tracking-wider">Data</TableHead>
+                <TableHead className="px-4 py-3 text-left text-xs font-medium text-neutral-800 uppercase tracking-wider">Cliente</TableHead>
+                <TableHead className="px-4 py-3 text-left text-xs font-medium text-neutral-800 uppercase tracking-wider">Contato</TableHead>
+                <TableHead className="px-4 py-3 text-left text-xs font-medium text-neutral-800 uppercase tracking-wider">Valor</TableHead>
+                <TableHead className="px-4 py-3 text-left text-xs font-medium text-neutral-800 uppercase tracking-wider">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-4">Loading sales...</TableCell>
+                  <TableCell colSpan={5} className="text-center py-4">Carregando...</TableCell>
                 </TableRow>
               ) : sales.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-4">No sales found</TableCell>
+                  <TableCell colSpan={5} className="text-center py-4">Vendas não encontrada</TableCell>
                 </TableRow>
               ) : (
                 sales.map((sale) => (

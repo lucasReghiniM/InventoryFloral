@@ -78,26 +78,26 @@ const PurchaseList: React.FC<PurchaseListProps> = ({
   return (
     <Card>
       <CardContent className="pt-6">
-        <h2 className="text-xl font-semibold mb-6">Recent Purchases</h2>
+        <h2 className="text-xl font-semibold mb-6">Compras Recentes</h2>
 
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead className="px-4 py-3 text-left text-xs font-medium text-neutral-800 uppercase tracking-wider">
-                  Invoice #
+                  Nota #
                 </TableHead>
                 <TableHead className="px-4 py-3 text-left text-xs font-medium text-neutral-800 uppercase tracking-wider">
-                  Date
+                  Data
                 </TableHead>
                 <TableHead className="px-4 py-3 text-left text-xs font-medium text-neutral-800 uppercase tracking-wider">
-                  Supplier
+                  Fornecedor
                 </TableHead>
                 <TableHead className="px-4 py-3 text-left text-xs font-medium text-neutral-800 uppercase tracking-wider">
                   Total
                 </TableHead>
                 <TableHead className="px-4 py-3 text-left text-xs font-medium text-neutral-800 uppercase tracking-wider">
-                  Actions
+                  ações
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -105,13 +105,13 @@ const PurchaseList: React.FC<PurchaseListProps> = ({
               {isLoading ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center py-4">
-                    Loading purchases...
+                    carregando compras...
                   </TableCell>
                 </TableRow>
               ) : purchases.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center py-4">
-                    No purchases found
+                    Nenhuma compra encontrada.
                   </TableCell>
                 </TableRow>
               ) : (

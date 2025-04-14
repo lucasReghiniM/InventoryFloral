@@ -24,7 +24,7 @@ interface Product {
 
 interface ProductItemData {
   id: string;
-  productId: string | number; // Support both string and number IDs 
+  productId: string | number; // Support both string and number IDs
   name: string;
   unitPrice: number;
   quantity: number;
@@ -38,7 +38,12 @@ interface ProductItemProps {
   onChange: (data: Partial<ProductItemData>) => void;
 }
 
-const ProductItem: React.FC<ProductItemProps> = ({ product, products, onRemove, onChange }) => {
+const ProductItem: React.FC<ProductItemProps> = ({
+  product,
+  products,
+  onRemove,
+  onChange,
+}) => {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -52,30 +57,30 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, products, onRemove, 
   const handleExistingProductSelect = (productId: string) => {
     console.log("Selected product ID:", productId);
     console.log("Products available:", products);
-    
+
     // Handle when product ID is a string or number
-    const selectedProduct = products.find(p => {
+    const selectedProduct = products.find((p) => {
       console.log("Comparing product:", p);
       console.log("Product ID type:", typeof p.id, "Value:", p.id);
       console.log("Selected ID type:", typeof productId, "Value:", productId);
-      
-      if (typeof p.id === 'string') {
+
+      if (typeof p.id === "string") {
         return p.id === productId;
-      } else if (typeof p.id === 'number') {
+      } else if (typeof p.id === "number") {
         return p.id === parseInt(productId);
       } else {
         // Handle as string as fallback
         return String(p.id) === productId;
       }
     });
-    
+
     console.log("Selected product:", selectedProduct);
-    
+
     if (selectedProduct) {
       const updatedData = {
         productId: selectedProduct.id,
         name: selectedProduct.name,
-        unitPrice: selectedProduct.unitPrice
+        unitPrice: selectedProduct.unitPrice,
       };
       console.log("Updating product with:", updatedData);
       onChange(updatedData);
@@ -89,7 +94,7 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, products, onRemove, 
     <div className="bg-neutral-100 p-4 rounded-md">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div>
-          <Label className="mb-1">Product Name</Label>
+          <Label className="mb-1">Nome do Produto</Label>
           {products.length > 0 ? (
             <Popover open={open} onOpenChange={setOpen}>
               <PopoverTrigger asChild>
@@ -99,13 +104,16 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, products, onRemove, 
                   aria-expanded={open}
                   className="w-full justify-between"
                 >
-                  {product.productId 
+                  {product.productId
                     ? products.find((p) => {
                         // Handle either string or number IDs
-                        if (typeof product.productId === 'string') {
+                        if (typeof product.productId === "string") {
                           return p.id === product.productId;
-                        } else if (typeof product.productId === 'number' && product.productId > 0) {
-                          return typeof p.id === 'number' 
+                        } else if (
+                          typeof product.productId === "number" &&
+                          product.productId > 0
+                        ) {
+                          return typeof p.id === "number"
                             ? p.id === product.productId
                             : p.id === product.productId.toString();
                         }
@@ -118,19 +126,24 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, products, onRemove, 
               <PopoverContent className="w-full p-0">
                 <Command>
                   <CommandInput placeholder="Search products..." />
-                  <CommandEmpty>No product found.</CommandEmpty>
+                  <CommandEmpty>Produto não encontrado</CommandEmpty>
                   <CommandGroup>
                     {products.map((p) => (
                       <CommandItem
                         key={p.id}
                         value={p.id.toString()}
-                        onSelect={() => handleExistingProductSelect(p.id.toString())}
+                        onSelect={() =>
+                          handleExistingProductSelect(p.id.toString())
+                        }
                       >
                         <Check
                           className={`mr-2 h-4 w-4 ${
-                            (typeof p.id === 'string' && p.id === product.productId.toString()) || 
-                            (typeof p.id === 'number' && p.id === product.productId) 
-                              ? "opacity-100" : "opacity-0"
+                            (typeof p.id === "string" &&
+                              p.id === product.productId.toString()) ||
+                            (typeof p.id === "number" &&
+                              p.id === product.productId)
+                              ? "opacity-100"
+                              : "opacity-0"
                           }`}
                         />
                         {p.name}
@@ -148,9 +161,9 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, products, onRemove, 
             />
           )}
         </div>
-        
+
         <div>
-          <Label className="mb-1">Unit Price</Label>
+          <Label className="mb-1">Preço unitario</Label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <span className="text-neutral-800 sm:text-sm">$</span>
@@ -162,24 +175,28 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, products, onRemove, 
               className="pl-7"
               placeholder="0.00"
               value={product.unitPrice}
-              onChange={(e) => onChange({ unitPrice: parseFloat(e.target.value) || 0 })}
+              onChange={(e) =>
+                onChange({ unitPrice: parseFloat(e.target.value) || 0 })
+              }
             />
           </div>
         </div>
-        
+
         <div>
-          <Label className="mb-1">Quantity</Label>
+          <Label className="mb-1">quantidade</Label>
           <Input
             type="number"
             min="0"
             placeholder="0"
             value={product.quantity}
-            onChange={(e) => onChange({ quantity: parseInt(e.target.value) || 0 })}
+            onChange={(e) =>
+              onChange({ quantity: parseInt(e.target.value) || 0 })
+            }
           />
         </div>
-        
+
         <div>
-          <Label className="mb-1">Final Value</Label>
+          <Label className="mb-1">Valor final</Label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <span className="text-neutral-800 sm:text-sm">$</span>
@@ -201,7 +218,7 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, products, onRemove, 
         className="mt-2 text-red-500 hover:text-red-700 hover:bg-red-100 p-0 h-8"
       >
         <Trash className="h-4 w-4 mr-1" />
-        <span className="text-sm">Remove</span>
+        <span className="text-sm">Remover</span>
       </Button>
     </div>
   );

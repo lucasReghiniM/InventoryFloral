@@ -160,7 +160,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ onComplete }) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Add New Product</CardTitle>
+        <CardTitle>Adicionar novo produto</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -170,9 +170,9 @@ const ProductForm: React.FC<ProductFormProps> = ({ onComplete }) => {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Product Name</FormLabel>
+                  <FormLabel>Nome do produto</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter product name" {...field} />
+                    <Input placeholder="Colocar nome do produto" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -183,7 +183,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ onComplete }) => {
 
             <div className="space-y-4">
               <div>
-                <FormLabel>Product Suppliers (Optional)</FormLabel>
+                <FormLabel>Fornecedores (Opcional)</FormLabel>
                 <div className="mt-2 space-y-4">
                   {suppliers.map((supplier, index) => (
                     <div
@@ -211,7 +211,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ onComplete }) => {
 
               <div className="space-y-4">
                 <div className="flex flex-col space-y-2">
-                  <label className="text-sm font-medium">Select Existing Supplier</label>
+                  <label className="text-sm font-medium">Selecionar existente</label>
                   <div className="flex gap-2">
                     <Popover open={open} onOpenChange={setOpen}>
                       <PopoverTrigger asChild>
@@ -223,7 +223,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ onComplete }) => {
                         >
                           {selectedSupplierId
                             ? availableSuppliers.find((supplier) => supplier.id === selectedSupplierId)?.name
-                            : "Search suppliers..."}
+                            : "Procurar fornecedor..."}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </PopoverTrigger>
@@ -257,7 +257,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ onComplete }) => {
                       <Input
                         type="number"
                         step="0.01"
-                        placeholder="Price"
+                        placeholder="Preço"
                         value={supplierPrice}
                         onChange={(e) => setSupplierPrice(e.target.value)}
                       />
@@ -274,7 +274,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ onComplete }) => {
                   </div>
                 </div>
               
-                <div className="flex flex-col space-y-2">
+                {/* <div className="flex flex-col space-y-2">
                   <label className="text-sm font-medium">Or Add New Supplier</label>
                   <div className="flex gap-2">
                     <div className="flex-1">
@@ -303,7 +303,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ onComplete }) => {
                       <Plus className="h-4 w-4" />
                     </Button>
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
 
@@ -313,9 +313,9 @@ const ProductForm: React.FC<ProductFormProps> = ({ onComplete }) => {
                 variant="outline"
                 onClick={() => onComplete?.()}
               >
-                Cancel
+                Cancelar
               </Button>
-              <Button type="submit">Create Product</Button>
+              <Button type="submit">Salvar produto</Button>
             </div>
           </form>
         </Form>

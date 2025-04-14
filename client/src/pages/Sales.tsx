@@ -42,7 +42,7 @@ const Sales: React.FC = () => {
       ) : (
         <>
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold">Sales</h1>
+            <h1 className="text-2xl font-bold">Venda</h1>
             <Button 
               onClick={() => setShowNewForm(!showNewForm)}
               variant={showNewForm ? "outline" : "default"}
@@ -56,8 +56,8 @@ const Sales: React.FC = () => {
           {showNewForm && (
             <Card>
               <CardHeader>
-                <CardTitle>New Sale</CardTitle>
-                <CardDescription>Add a new sale to your records</CardDescription>
+                <CardTitle>Nova venda</CardTitle>
+                <CardDescription>Adicionar venda</CardDescription>
               </CardHeader>
               <CardContent>
                 <SaleForm onComplete={() => setShowNewForm(false)} />

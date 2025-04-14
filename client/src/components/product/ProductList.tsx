@@ -36,7 +36,7 @@ const ProductList: React.FC<ProductListProps> = ({
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Products</CardTitle>
+          <CardTitle>Produtos</CardTitle>
           <CardDescription>
             Loading products...
           </CardDescription>
@@ -55,9 +55,9 @@ const ProductList: React.FC<ProductListProps> = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Products</CardTitle>
+        <CardTitle>Produtos</CardTitle>
         <CardDescription>
-          Manage your flower shop products
+          Gerencie seus produtos e fornecedores aqui.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -73,10 +73,10 @@ const ProductList: React.FC<ProductListProps> = ({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
+                <TableHead>Nome</TableHead>
                 <TableHead className="text-right">Current Stock</TableHead>
-                <TableHead>Suppliers</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>Fornecedores</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
