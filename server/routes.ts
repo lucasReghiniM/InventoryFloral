@@ -166,25 +166,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/purchases/:id", async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
+      // Using string ID directly instead of parsing to integer
+      const id = req.params.id;
+      console.log(`API - Getting purchase with ID: ${id}`);
+      
       const purchase = await storage.getPurchase(id);
       
       if (!purchase) {
+        console.log(`API - Purchase with ID ${id} not found`);
         return res.status(404).json({ message: "Purchase not found" });
       }
       
+      console.log(`API - Found purchase:`, purchase);
       res.json(purchase);
     } catch (error) {
+      console.error("API - Failed to get purchase:", error);
       res.status(500).json({ message: "Failed to get purchase" });
     }
   });
   
   app.get("/api/purchases/:id/items", async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
+      // Using string ID directly
+      const id = req.params.id;
+      console.log(`API - Getting purchase items for purchase ID: ${id}`);
+      
       const purchaseItems = await storage.getPurchaseItems(id);
+      console.log(`API - Found ${purchaseItems.length} purchase items`);
+      
       res.json(purchaseItems);
     } catch (error) {
+      console.error("API - Failed to get purchase items:", error);
       res.status(500).json({ message: "Failed to get purchase items" });
     }
   });
@@ -249,15 +261,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/purchases/:id", async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
+      // Using string ID directly
+      const id = req.params.id;
+      console.log(`API - Deleting purchase with ID: ${id}`);
+      
       const success = await storage.deletePurchase(id);
       
       if (!success) {
+        console.log(`API - Purchase with ID ${id} not found for deletion`);
         return res.status(404).json({ message: "Purchase not found" });
       }
       
+      console.log(`API - Successfully deleted purchase with ID: ${id}`);
       res.status(204).end();
     } catch (error) {
+      console.error("API - Failed to delete purchase:", error);
       res.status(500).json({ message: "Failed to delete purchase" });
     }
   });

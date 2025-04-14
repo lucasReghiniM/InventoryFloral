@@ -14,6 +14,7 @@ import {
   type InventoryAdjustment as InventoryAdjustmentType,
   type InsertInventoryAdjustment as InsertInventoryAdjustmentType
 } from "@shared/schema";
+import { v4 as uuidv4 } from 'uuid';
 
 // Export types for use in firebaseStorage
 export type Product = ProductType;
@@ -77,13 +78,11 @@ export interface IStorage {
 export class MemStorage implements IStorage {
   private productsMap: Map<string, Product>;
   private suppliersMap: Map<string, Supplier>;
-  private purchasesMap: Map<number, Purchase>;
-  private purchaseItemsMap: Map<number, PurchaseItem>;
+  private purchasesMap: Map<string, Purchase>; // Changed to string keys for UUIDs
+  private purchaseItemsMap: Map<string, PurchaseItem>; // Changed to string keys for UUIDs
   private salesMap: Map<number, Sale>;
   private saleItemsMap: Map<number, SaleItem>;
   private inventoryAdjustmentsMap: Map<number, InventoryAdjustment>;
-  private currentPurchaseId: number;
-  private currentPurchaseItemId: number;
   private currentSaleId: number;
   private currentSaleItemId: number;
   private currentInventoryAdjustmentId: number;
@@ -98,8 +97,6 @@ export class MemStorage implements IStorage {
     this.salesMap = new Map();
     this.saleItemsMap = new Map();
     this.inventoryAdjustmentsMap = new Map();
-    this.currentPurchaseId = 1;
-    this.currentPurchaseItemId = 1;
     this.currentSaleId = 1;
     this.currentSaleItemId = 1;
     this.currentInventoryAdjustmentId = 1;
@@ -190,30 +187,37 @@ export class MemStorage implements IStorage {
     return Array.from(this.purchasesMap.values());
   }
 
-  async getPurchase(id: number): Promise<Purchase | undefined> {
+  async getPurchase(id: string): Promise<Purchase | undefined> {
     return this.purchasesMap.get(id);
   }
 
   async createPurchase(purchase: InsertPurchase): Promise<Purchase> {
-    const id = this.currentPurchaseId++;
+    // Generate a UUID for the purchase
+    const id = uuidv4();
     const newPurchase: Purchase = { id, ...purchase };
     this.purchasesMap.set(id, newPurchase);
     return newPurchase;
   }
 
-  async deletePurchase(id: number): Promise<boolean> {
+  async deletePurchase(id: string): Promise<boolean> {
+    // Also delete associated purchase items
+    const purchaseItems = await this.getPurchaseItems(id);
+    for (const item of purchaseItems) {
+      this.purchaseItemsMap.delete(item.id);
+    }
     return this.purchasesMap.delete(id);
   }
 
   // Purchase items methods
-  async getPurchaseItems(purchaseId: number): Promise<PurchaseItem[]> {
+  async getPurchaseItems(purchaseId: string): Promise<PurchaseItem[]> {
     return Array.from(this.purchaseItemsMap.values()).filter(
       item => item.purchaseId === purchaseId
     );
   }
 
   async createPurchaseItem(purchaseItem: InsertPurchaseItem): Promise<PurchaseItem> {
-    const id = this.currentPurchaseItemId++;
+    // Generate a UUID for the purchase item
+    const id = uuidv4();
     const newPurchaseItem: PurchaseItem = { id, ...purchaseItem };
     this.purchaseItemsMap.set(id, newPurchaseItem);
     return newPurchaseItem;
