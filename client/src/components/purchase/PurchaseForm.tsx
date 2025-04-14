@@ -7,8 +7,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest, getQueryFn } from "@/lib/queryClient";
@@ -23,7 +33,9 @@ const purchaseFormSchema = z.object({
   invoiceNumber: z.string().min(1, { message: "Invoice number is required" }),
   orderDate: z.string().min(1, { message: "Order date is required" }),
   supplier: z.string().min(1, { message: "Supplier name is required" }),
-  deliveryCost: z.number().min(0, { message: "Delivery cost must be a positive number" }),
+  deliveryCost: z
+    .number()
+    .min(0, { message: "Delivery cost must be a positive number" }),
 });
 
 interface ProductItemData {
@@ -38,46 +50,59 @@ interface ProductItemData {
 const PurchaseForm: React.FC<PurchaseFormProps> = ({ onComplete }) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [products, setProducts] = useState<ProductItemData[]>([{ 
-    id: Date.now().toString(), 
-    productId: "", // Use empty string for initial state
-    name: "", 
-    unitPrice: 0, 
-    quantity: 0, 
-    finalValue: 0 
-  }]);
+  const [products, setProducts] = useState<ProductItemData[]>([
+    {
+      id: Date.now().toString(),
+      productId: "", // Use empty string for initial state
+      name: "",
+      unitPrice: 0,
+      quantity: 0,
+      finalValue: 0,
+    },
+  ]);
 
-  const { data: productsData = [], isLoading: isProductsLoading } = useQuery<Product[]>({
+  const { data: productsData = [], isLoading: isProductsLoading } = useQuery<
+    Product[]
+  >({
     queryKey: ["/api/products"],
     queryFn: getQueryFn({ on401: "returnNull" }),
   });
 
   // Transform products to the format expected by ProductItem
   const allProducts = React.useMemo(() => {
-    return productsData.map(product => ({
+    return productsData.map((product) => ({
       id: product.id, // Keep IDs as strings since we now support string IDs in ProductItem
       name: product.name,
-      unitPrice: product.suppliers && product.suppliers.length > 0 
-        ? product.suppliers[0].priceHistory && product.suppliers[0].priceHistory.length > 0 
-          ? product.suppliers[0].priceHistory[0].price 
-          : 0
-        : 0
+      unitPrice:
+        product.suppliers && product.suppliers.length > 0
+          ? product.suppliers[0].priceHistory &&
+            product.suppliers[0].priceHistory.length > 0
+            ? product.suppliers[0].priceHistory[0].price
+            : 0
+          : 0,
     }));
   }, [productsData]);
-  
+
   const { data: suppliers = [] } = useQuery<Supplier[]>({
     queryKey: ["/api/suppliers"],
     queryFn: getQueryFn({ on401: "returnNull" }),
   });
-  
+
   const [supplierPopoverOpen, setSupplierPopoverOpen] = useState(false);
   const [selectedSupplierId, setSelectedSupplierId] = useState<string>("");
 
-  const { register, handleSubmit, reset, formState: { errors }, watch, setValue } = useForm<z.infer<typeof purchaseFormSchema>>({
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+    watch,
+    setValue,
+  } = useForm<z.infer<typeof purchaseFormSchema>>({
     resolver: zodResolver(purchaseFormSchema),
     defaultValues: {
       invoiceNumber: "",
-      orderDate: new Date().toISOString().split('T')[0],
+      orderDate: new Date().toISOString().split("T")[0],
       supplier: "",
       deliveryCost: 0,
     },
@@ -86,27 +111,36 @@ const PurchaseForm: React.FC<PurchaseFormProps> = ({ onComplete }) => {
   const deliveryCost = watch("deliveryCost");
 
   const createPurchaseMutation = useMutation({
-    mutationFn: (data: any) => apiRequest("POST", "/api/purchases", data),
+    mutationFn: (data: any) => {
+      return apiRequest("/api/purchases", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/purchases"] });
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/inventory-adjustments"] });
-      
+      queryClient.invalidateQueries({
+        queryKey: ["/api/inventory-adjustments"],
+      });
+
       toast({
         title: "Purchase added successfully",
         description: "The purchase has been recorded.",
       });
-      
+
       reset();
-      setProducts([{ 
-        id: Date.now().toString(), 
-        productId: "", // Use empty string for initial state
-        name: "", 
-        unitPrice: 0, 
-        quantity: 0, 
-        finalValue: 0 
-      }]);
-      
+      setProducts([
+        {
+          id: Date.now().toString(),
+          productId: "", // Use empty string for initial state
+          name: "",
+          unitPrice: 0,
+          quantity: 0,
+          finalValue: 0,
+        },
+      ]);
+
       // Call onComplete if provided
       if (onComplete) {
         onComplete();
@@ -124,13 +158,13 @@ const PurchaseForm: React.FC<PurchaseFormProps> = ({ onComplete }) => {
   const addProduct = () => {
     setProducts([
       ...products,
-      { 
-        id: Date.now().toString(), 
+      {
+        id: Date.now().toString(),
         productId: "", // Use empty string for initial state
-        name: "", 
-        unitPrice: 0, 
-        quantity: 0, 
-        finalValue: 0 
+        name: "",
+        unitPrice: 0,
+        quantity: 0,
+        finalValue: 0,
       },
     ]);
   };
@@ -144,15 +178,15 @@ const PurchaseForm: React.FC<PurchaseFormProps> = ({ onComplete }) => {
       });
       return;
     }
-    
+
     setProducts(products.filter((product) => product.id !== id));
   };
 
   const updateProduct = (id: string, data: Partial<ProductItemData>) => {
     setProducts(
       products.map((product) =>
-        product.id === id ? { ...product, ...data } : product
-      )
+        product.id === id ? { ...product, ...data } : product,
+      ),
     );
   };
 
@@ -166,40 +200,44 @@ const PurchaseForm: React.FC<PurchaseFormProps> = ({ onComplete }) => {
 
   const onSubmit = (data: z.infer<typeof purchaseFormSchema>) => {
     // Validate products - check for valid product ID (string or number)
-    const validProducts = products.filter(
-      (product) => {
-        // Check if productId is valid based on its type
-        let hasValidId = false;
-        if (typeof product.productId === 'string') {
-          hasValidId = Boolean(product.productId) && product.productId.length > 0;
-        } else if (typeof product.productId === 'number') {
-          hasValidId = product.productId > 0;
-        }
-        
-        return hasValidId && product.name && product.unitPrice > 0 && product.quantity > 0;
+    const validProducts = products.filter((product) => {
+      // Check if productId is valid based on its type
+      let hasValidId = false;
+      if (typeof product.productId === "string") {
+        hasValidId = Boolean(product.productId) && product.productId.length > 0;
+      } else if (typeof product.productId === "number") {
+        hasValidId = product.productId > 0;
       }
-    );
+
+      return (
+        hasValidId &&
+        product.name &&
+        product.unitPrice > 0 &&
+        product.quantity > 0
+      );
+    });
 
     if (validProducts.length === 0) {
       toast({
         title: "Invalid products",
-        description: "Please add at least one valid product with a selected product from the dropdown",
+        description:
+          "Please add at least one valid product with a selected product from the dropdown",
         variant: "destructive",
       });
       return;
     }
-    
+
     // Check if any product is missing a selection
-    const hasUnselectedProducts = products.some(product => {
+    const hasUnselectedProducts = products.some((product) => {
       const productId = product.productId;
-      if (typeof productId === 'string') {
+      if (typeof productId === "string") {
         return !productId || productId.length === 0;
-      } else if (typeof productId === 'number') {
+      } else if (typeof productId === "number") {
         return !productId || productId <= 0;
       }
       return true; // If productId is undefined or any other type, consider it unselected
     });
-    
+
     if (hasUnselectedProducts) {
       toast({
         title: "Product selection required",
@@ -225,7 +263,7 @@ const PurchaseForm: React.FC<PurchaseFormProps> = ({ onComplete }) => {
         finalValue: product.finalValue,
       })),
     };
-
+    console.log("🟢 Dados finais da purchase:", purchaseData);
     createPurchaseMutation.mutate(purchaseData);
   };
 
@@ -233,11 +271,13 @@ const PurchaseForm: React.FC<PurchaseFormProps> = ({ onComplete }) => {
     <Card>
       <CardContent className="pt-6">
         <h2 className="text-xl font-semibold mb-6">New Purchase</h2>
-        
+
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
-              <Label htmlFor="invoiceNumber" className="mb-1">Invoice Number</Label>
+              <Label htmlFor="invoiceNumber" className="mb-1">
+                Invoice Number
+              </Label>
               <Input
                 id="invoiceNumber"
                 placeholder="INV-00001"
@@ -245,12 +285,16 @@ const PurchaseForm: React.FC<PurchaseFormProps> = ({ onComplete }) => {
                 className={errors.invoiceNumber ? "border-red-500" : ""}
               />
               {errors.invoiceNumber && (
-                <p className="text-red-500 text-sm mt-1">{errors.invoiceNumber.message}</p>
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.invoiceNumber.message}
+                </p>
               )}
             </div>
-            
+
             <div>
-              <Label htmlFor="orderDate" className="mb-1">Order Date</Label>
+              <Label htmlFor="orderDate" className="mb-1">
+                Order Date
+              </Label>
               <Input
                 id="orderDate"
                 type="date"
@@ -258,13 +302,20 @@ const PurchaseForm: React.FC<PurchaseFormProps> = ({ onComplete }) => {
                 className={errors.orderDate ? "border-red-500" : ""}
               />
               {errors.orderDate && (
-                <p className="text-red-500 text-sm mt-1">{errors.orderDate.message}</p>
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.orderDate.message}
+                </p>
               )}
             </div>
-            
+
             <div>
-              <Label htmlFor="supplier" className="mb-1">Supplier Name</Label>
-              <Popover open={supplierPopoverOpen} onOpenChange={setSupplierPopoverOpen}>
+              <Label htmlFor="supplier" className="mb-1">
+                Supplier Name
+              </Label>
+              <Popover
+                open={supplierPopoverOpen}
+                onOpenChange={setSupplierPopoverOpen}
+              >
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
@@ -293,7 +344,9 @@ const PurchaseForm: React.FC<PurchaseFormProps> = ({ onComplete }) => {
                         >
                           <Check
                             className={`mr-2 h-4 w-4 ${
-                              watch("supplier") === supplier.name ? "opacity-100" : "opacity-0"
+                              watch("supplier") === supplier.name
+                                ? "opacity-100"
+                                : "opacity-0"
                             }`}
                           />
                           {supplier.name}
@@ -305,12 +358,16 @@ const PurchaseForm: React.FC<PurchaseFormProps> = ({ onComplete }) => {
               </Popover>
               <input type="hidden" {...register("supplier")} />
               {errors.supplier && (
-                <p className="text-red-500 text-sm mt-1">{errors.supplier.message}</p>
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.supplier.message}
+                </p>
               )}
             </div>
-            
+
             <div>
-              <Label htmlFor="deliveryCost" className="mb-1">Delivery Cost</Label>
+              <Label htmlFor="deliveryCost" className="mb-1">
+                Delivery Cost
+              </Label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <span className="text-neutral-800 sm:text-sm">$</span>
@@ -326,13 +383,15 @@ const PurchaseForm: React.FC<PurchaseFormProps> = ({ onComplete }) => {
                 />
               </div>
               {errors.deliveryCost && (
-                <p className="text-red-500 text-sm mt-1">{errors.deliveryCost.message}</p>
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.deliveryCost.message}
+                </p>
               )}
             </div>
           </div>
-          
+
           <h3 className="font-semibold mb-3 text-neutral-800">Products</h3>
-          
+
           <div className="mb-6 space-y-4">
             {products.map((product) => (
               <ProductItem
@@ -344,7 +403,7 @@ const PurchaseForm: React.FC<PurchaseFormProps> = ({ onComplete }) => {
               />
             ))}
           </div>
-          
+
           <Button
             type="button"
             variant="ghost"
@@ -354,23 +413,29 @@ const PurchaseForm: React.FC<PurchaseFormProps> = ({ onComplete }) => {
             <PlusCircle className="mr-2 h-4 w-4" />
             Add Product
           </Button>
-          
+
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-t pt-4 border-neutral-200">
             <div className="mb-4 sm:mb-0">
               <div className="flex items-center">
-                <span className="font-semibold text-neutral-800">Subtotal:</span>
+                <span className="font-semibold text-neutral-800">
+                  Subtotal:
+                </span>
                 <span className="ml-2">${getSubtotal().toFixed(2)}</span>
               </div>
               <div className="flex items-center mt-1">
-                <span className="font-semibold text-neutral-800">Delivery:</span>
+                <span className="font-semibold text-neutral-800">
+                  Delivery:
+                </span>
                 <span className="ml-2">${(deliveryCost || 0).toFixed(2)}</span>
               </div>
               <div className="flex items-center mt-1">
                 <span className="font-semibold text-neutral-800">Total:</span>
-                <span className="ml-2 text-lg font-semibold text-primary">${getTotal().toFixed(2)}</span>
+                <span className="ml-2 text-lg font-semibold text-primary">
+                  ${getTotal().toFixed(2)}
+                </span>
               </div>
             </div>
-            
+
             <Button
               type="submit"
               className="w-full sm:w-auto bg-primary hover:bg-primary/90"
