@@ -422,8 +422,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ? adjustmentData.quantity 
         : -adjustmentData.quantity;
         
-      // Pass product ID directly - can be either string or number
-      await storage.updateProductStock(adjustmentData.productId, quantityChange);
+      // Convert productId to string if needed to ensure consistency
+      const productId = adjustmentData.productId.toString();
+      await storage.updateProductStock(productId, quantityChange);
       
       res.status(201).json(adjustment);
     } catch (error) {
