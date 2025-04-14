@@ -364,14 +364,13 @@ export class FirebaseStorage implements IStorage {
       const data = doc.data();
       console.log(`Purchase data:`, data);
 
-      const id = data.id || doc.id; // ✅ Corrigido aqui
-
+      // Always use document ID as the source of truth for the ID
       return {
-        id,
+        id: doc.id,
         invoiceNumber: data.invoiceNumber,
         orderDate: convertTimestampToString(data.orderDate),
         supplier: data.supplier,
-        deliveryCost: data.deliveryCost,
+        deliveryCost: data.deliveryCost || 0,
         totalAmount: data.totalAmount,
       };
     });
@@ -467,38 +466,60 @@ export class FirebaseStorage implements IStorage {
   }
 
   // Purchase items methods
-  async getPurchaseItems(purchaseId: number): Promise<PurchaseItem[]> {
+  async getPurchaseItems(purchaseId: string): Promise<PurchaseItem[]> {
+    console.log(`Getting purchase items for purchase ID: ${purchaseId}`);
+    
     const purchaseItemsRef = collection(db, "purchaseItems");
     const q = query(purchaseItemsRef, where("purchaseId", "==", purchaseId));
     const snapshot = await getDocs(q);
 
-    return snapshot.docs.map((doc) => ({
-      id: Number(doc.id),
-      ...(doc.data() as Omit<PurchaseItem, "id">),
-    }));
+    console.log(`Found ${snapshot.docs.length} purchase items`);
+    
+    // Create PurchaseItems with string IDs
+    return snapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: doc.id, // Use the document ID directly (string)
+        purchaseId: data.purchaseId,
+        productId: data.productId,
+        quantity: data.quantity,
+        unitPrice: data.unitPrice,
+        finalValue: data.finalValue
+      };
+    });
   }
 
   async createPurchaseItem(
     purchaseItem: InsertPurchaseItem,
   ): Promise<PurchaseItem> {
-    // Get next ID
-    const purchaseItemsRef = collection(db, "purchaseItems");
-    const snapshot = await getDocs(purchaseItemsRef);
-    const nextId =
-      snapshot.docs.length > 0
-        ? Math.max(...snapshot.docs.map((doc) => Number(doc.id))) + 1
-        : 1;
-
-    // Create document with the calculated ID (as string)
-    const docRef = doc(db, "purchaseItems", nextId.toString());
-    await setDoc(docRef, {
-      ...purchaseItem,
-      id: nextId,
-    });
-
-    console.log("Purchase item created with ID:", nextId);
-
-    return { id: nextId, ...purchaseItem };
+    console.log("Creating purchase item with data:", purchaseItem);
+    
+    // Generate UUID for purchase item
+    const purchaseItemId = uuidv4();
+    console.log("Generated purchase item ID (UUID):", purchaseItemId);
+    
+    try {
+      // Create document with UUID as document ID
+      const docRef = doc(db, "purchaseItems", purchaseItemId);
+      await setDoc(docRef, {
+        ...purchaseItem,
+        id: purchaseItemId // Store the UUID as the ID field
+      });
+      
+      console.log("Purchase item created successfully with ID:", purchaseItemId);
+      
+      return { 
+        id: purchaseItemId, 
+        purchaseId: purchaseItem.purchaseId,
+        productId: purchaseItem.productId,
+        quantity: purchaseItem.quantity,
+        unitPrice: purchaseItem.unitPrice,
+        finalValue: purchaseItem.finalValue
+      };
+    } catch (error) {
+      console.error("Error creating purchase item:", error);
+      throw error;
+    }
   }
 
   // Sales methods

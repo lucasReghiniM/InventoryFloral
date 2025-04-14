@@ -50,12 +50,12 @@ export interface IStorage {
   
   // Purchase methods
   getPurchases(): Promise<Purchase[]>;
-  getPurchase(id: number): Promise<Purchase | undefined>;
+  getPurchase(id: string): Promise<Purchase | undefined>;
   createPurchase(purchase: InsertPurchase): Promise<Purchase>;
-  deletePurchase(id: number): Promise<boolean>;
+  deletePurchase(id: string): Promise<boolean>;
   
   // Purchase items methods
-  getPurchaseItems(purchaseId: number): Promise<PurchaseItem[]>;
+  getPurchaseItems(purchaseId: string): Promise<PurchaseItem[]>;
   createPurchaseItem(purchaseItem: InsertPurchaseItem): Promise<PurchaseItem>;
   
   // Sales methods
